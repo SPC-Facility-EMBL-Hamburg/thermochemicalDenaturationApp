@@ -1,0 +1,7 @@
+nomkl
+numpy
+pandas
+scipy
+openpyxl
+xlrd
+pychemelt
