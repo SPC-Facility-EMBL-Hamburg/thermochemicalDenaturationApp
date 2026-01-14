@@ -57,7 +57,7 @@
 </li>
 
 <li class="vf-list__item ">
-    In the tab "1. Import data" upload the data in the Input field under "1. DSF files". You can upload multiple files at once. The service can handle different file formats.
+    In the tab "1. Import data" upload the data in the Input field under "1. DSF files". You can upload multiple files at once. The tool can handle different file formats (check the User Guide).
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
@@ -131,8 +131,8 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
 <br>
 
 <li class="vf-list__item ">
-    We set the windows for the baselines as 10 in 2a and 2b each. They control the temperature window sizes at the 
-    beginning and end of the curves which are used to estimate the baseline functions of the native and unfolded 
+    We set the windows for the baselines as 10 degrees Celsius in 2a and 2b each. They control the temperature window sizes at the 
+    beginning and end of the curves which are used for the initial estimation of the baseline functions of the native and unfolded 
     protein and shouldn't be too narrow.
 </li>
 
@@ -162,7 +162,7 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
     The option "Set param bounds" let's you manually choose the parameter boundries and the option 
     "Fit data subset" let's you reduce the number of datapoints for a faster fitting with often a very similar 
     result and thus we choose 100 maximal points per curve.  
-    With the "Run Fitting!" button the fitting is started. This can take some time depending on the size of the dataset.
+    With the "Run Fitting!" button the fitting is started. This can take some minutes depending on the size of the dataset.
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
@@ -187,7 +187,7 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
  <ol class="vf-intro__text">
 
 <li class="vf-list__item ">
-    The fitted formula can be seen graphically in "Fitted signal" as black lines.
+    The fitted data can be seen in the "Fitted signal" Tab as black lines.
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
@@ -207,10 +207,10 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
 <li class="vf-list__item ">
     In the Tab "Fitted params" you can find the thermodynamic parameters as well as technical parameters used 
     to fit the formula to the curve with their respective units. Additionally, you can find the relative error and 
-    the boundries used for fitting. The relative error is an indication of the quality of the fit. While a high relativ error 
-    shows a bad fit, a low error can be a good fit but is not proof of one.<br>
+    the boundries used for fitting. The relative error is an indication of the quality of the fit. While a high relative error 
+    indicates an inadequate model, a low error is not proof of an adequate one.<br>
     The resulting thermodynamic parameters should always be critically evaluated, as errors of the fit are possible and they 
-    should roughly match expectations. If they reach the boundries, for example, it can be due to outliers not being accounted 
+    should roughly match expectations. If they reach the boundaries, for example, it can be due to outliers not being accounted 
     for, which skew the results.
 </li>
 
@@ -220,7 +220,7 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
 <br>
 
 <li class="vf-list__item ">
-    In the tab "DG vs T" you can find the Calculated Gibbs free energy ΔG againt the temperature as a graphical representation.
+    In the tab "DG vs T" you can find the calculated Gibbs free energy ΔG againt the temperature as a graphical representation.
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
