@@ -21,7 +21,7 @@ shinyUI(
                 menuItem("3. Export results",        icon = icon("file-export"),            tabName = "menu_export"),
                 #menuItem("Simulate data",            icon = icon("magnifying-glass-chart"), tabName = "menu_simulate"),
                 menuItem("User guide",               icon = icon("user-astronaut"),         tabName = "menu_user_guide"),
-                #menuItem("Tutorial",                 icon = icon("book-open"),              tabName = "menu_tutorial"),
+                menuItem("Tutorial",                 icon = icon("book-open"),              tabName = "menu_tutorial"),
                 menuItem("About", icon = icon("circle-info"), tabName = "menu_about")
             )
         ),
@@ -75,6 +75,7 @@ shinyUI(
                 ),
 
                 tabItem(tabName = "menu_user_guide", includeHTML("www/docs/user_guide.html")),
+                tabItem(tabName = "menu_tutorial", includeHTML("www/docs/tutorial.html")),
                 tabItem(tabName = "menu_about", includeHTML("www/docs/about.html"))
 
             )

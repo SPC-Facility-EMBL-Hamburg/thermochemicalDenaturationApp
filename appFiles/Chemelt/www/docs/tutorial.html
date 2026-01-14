@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" class="vf-no-js" >
+<head>
+  <script>
+  // Detect if JS is on and swap vf-no-js for vf-js on the html element
+  (function(H){H.className=H.className.replace(/\bvf-no-js\b/,'vf-js')})(document.documentElement);
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content=
+  "width=device-width, initial-scale=1">
+  <link rel="stylesheet" media="all" href="https://assets.emblstatic.net/vf/v2.4.5/css/styles.css">
+  
+    <script type="text/javascript" async
+          src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+  </script>
+  
+</head>
+
+<body class="vf-body vf-stack"><script id="__bs_script__">//<![CDATA[
+    document.write("<script async src='/browser-sync/browser-sync-client.js?v=2.26.14'><\/script>".replace("HOST", location.hostname));
+//]]></script>
+
+<section class="vf-intro" id="an-id-for-anchor">
+  
+  <div class="vf-stack">
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link" onclick="myFunction('Overview')">Overview<svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="Overview" style="display:none">
+  
+<p class="vf-intro__text">
+    Welcome! Here you will find a tutorial to familiarize yourself with the Chemelt workflow!
+</p>
+ 
+<p class="vf-intro__text"></p>
+           
+</div>        
+
+<!-- Tutorial 1 Data loading and preparation-->
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link"
+                                  onclick="myFunction('tutorial1')">1) Data loading and preparation
+    <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="tutorial1" style="display:none">
+
+ <ol class="vf-intro__text">
+
+<li class="vf-list__item ">
+    In this tutorial we will work with some example data. Please download the NanoDSF example data <a href="nDSFdemoFile.xlsx" download>nDSFdemoFile.xlsx</a> to your computer. 
+    This data is exemplary data of a NanoDSF experiment. It contains multiple thermal denaturation curves of samples with different chemical denaturant concentrations of two denaturants, GuHCl and Urea.
+
+</li>
+
+<li class="vf-list__item ">
+    In the tab "1. Import data" upload the data in the Input field under "1. DSF files". You can upload multiple files at once. The tool can handle different file formats (check the User Guide).
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto1.1_input_empty.png" alt="Base Input tab" width="500" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    The option "Signal" let's you choose different signals captured in the experiment and present in the file. Here we choose 350nm. Additionally, the signals can be normalised.
+    The option "Temperature range (ºC)" let's you choose the temperature range which will be analyzed.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto1.2_input_w_data.png" alt="Input tab w uploaded data" width="300" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    In the field "[Denaturant] (M)" you can choose which denaturant concentrations should be included in the fitting. As the demo file contains the results of two kinds of 
+    denaturants, GuHCl and Urea, we choose only the samples with GuHCl.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto1.3_denaturant_concentrations.png" alt="Denaturant field with selected denaturant concentrations" width="400" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    In the field underneath we can see the data as a plot of the signal against temperature. 
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto1.4_loaded_curves.png" alt="Plot of data with defetive concentration" width="1000" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+As we can see here, the curve with the denaturant concentration of 6.54 M and 2.5 M (uppermost curve) are outliers and are thus excluded from the analysis in the "[Denaturant] (M)" field.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto1.5_removed_concentration.png" alt="Denaturant field with selected denaturant concentrations and removed concentration of 6.54 M" width="400" loading="lazy"/>
+</figure>
+<br>
+
+</ol>
+
+</div>
+
+
+
+<!-- Tutorial 2 Function Fitting-->
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link"
+                                  onclick="myFunction('tutorial2')">2)  Function fitting
+    <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="tutorial2" style="display:none">
+
+ <ol class="vf-intro__text">
+
+<li class="vf-list__item ">
+    Under the tab "2. Fitting" we can set the settings for the fitting of the formula to the curves.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto2.1_fitting_settings.png" alt="Fitting Settings" width="1000" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    We set the windows for the baselines as 10 degrees Celsius in 2a and 2b each. They control the temperature window sizes at the 
+    beginning and end of the curves which are used for the initial estimation of the baseline functions of the native and unfolded 
+    protein and shouldn't be too narrow.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto2.2_base_windows.png" alt="Baseline Window setting" width="600" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    The Setting 2c controls the amount of parameters and type of fitting. For more information check out 
+    "Choosing a model" in the User Guide.
+    We choose the setting global slopes and global intercepts as this method has the least parameters. 
+    The "Fit scale factor" corrects for small experimental errors.
+    The Number of residues is necessary for an initial estimate of the ΔC<sub>p</sub> parameter and is the 
+    number of residues of the analyzed protein.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto2.3_fitting_mode_scale.png" alt="Fitting mode and other settings" width="800" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    The Setting 2d and 2e control the type of baseline fitted to the curves. For the native baseline (2d) a 
+    linear baseline is usually used and for the unfolded baseline (2e) a quadratic. Here we use linear for the 
+    native and exponential for the unfolded, as we found that the exponential baseline generalizes better.
+    The option "Set param bounds" let's you manually choose the parameter boundries and the option 
+    "Fit data subset" let's you reduce the number of datapoints for a faster fitting with often a very similar 
+    result and thus we choose 100 maximal points per curve.  
+    With the "Run Fitting!" button the fitting is started. This can take some minutes depending on the size of the dataset.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto2.4_base_types_and_settings.png" alt="Baseline types and other settings" width="1000" loading="lazy"/>
+</figure>
+<br>
+
+</ol>
+
+</div>
+
+<!-- Tutorial 3 Analysis-->
+
+<div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link"
+                                  onclick="myFunction('tutorial3')">3)  Analysis
+    <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
+    </svg></a></div>
+
+<div id="tutorial3" style="display:none">
+
+ <ol class="vf-intro__text">
+
+<li class="vf-list__item ">
+    The fitted data can be seen in the "Fitted signal" Tab as black lines.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto3.1_fitting_graph.png" alt="Graph of fitted data" width="1000" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    Underneath the graph are different plotting options to change the visualisation.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto3.2_plot_options.png" alt="Plotting options" width="1000" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    In the Tab "Fitted params" you can find the thermodynamic parameters as well as technical parameters used 
+    to fit the formula to the curve with their respective units. Additionally, you can find the relative error and 
+    the boundries used for fitting. The relative error is an indication of the quality of the fit. While a high relative error 
+    indicates an inadequate model, a low error is not proof of an adequate one.<br>
+    The resulting thermodynamic parameters should always be critically evaluated, as errors of the fit are possible and they 
+    should roughly match expectations. If they reach the boundaries, for example, it can be due to outliers not being accounted 
+    for, which skew the results.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto3.3_fitted_parameters.png" alt="Fitted parameters" width="600" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    In the tab "DG vs T" you can find the calculated Gibbs free energy ΔG againt the temperature as a graphical representation.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto3.4_DG_graph.png" alt="Graph showing the DG in dependence on T" width="1000" loading="lazy"/>
+</figure>
+<br>
+
+<li class="vf-list__item ">
+    The results can be exported in the tab "3. Export results". Here the fitted parameters, the original signal and the fitted 
+    signal can be exported and downloaded as a CSV file for further analysis.
+</li>
+
+<figure class="vf-figure vf-figure--align vf-figure--align-centered">
+<img src="tuto3.5_export_results.png" alt="Result exporting Tab" width="300" loading="lazy"/>
+</figure>
+<br>
+
+</ol>
+
+</div>
+
+
+</div>
+</section>
+
+  <!-- IE11 polyfill JS -->
+  <script nomodule crossorigin="anonymous" src="https://polyfill.io/v3/polyfill.min.js?flags=gated&features=default"></script>
+  <script src="https://assets.emblstatic.net/vf/v2.4.5/scripts/scripts.js"></script>
+  
+  <!-- Hide div element onclick JS -->
+  <script>
+    function myFunction(divID) {
+      var x = document.getElementById(divID);
+      if (x.style.display === "none") {
+        x.style.display = "block";
+      } else {
+        x.style.display = "none";
+      }
+    }
+  </script>
+  
+
+</body>
+</html>
