@@ -52,12 +52,17 @@ plot_fluo_signal <- function(
     y_legend_pos=1,
     color_bar_length=0.5,
     color_bar_orientation='h',
+    show_colorbar=TRUE,
     show_grid_x=FALSE,
     show_grid_y=FALSE,
     y_axis_label='Signal',
     marker_size = 2,
     line_width = 2,
     max_points = 2000,
+    n_xticks = 6,
+    n_yticks = 6,
+    tick_length = 8,
+    tick_width = 2,
     derivative = FALSE){
 
     # Select at most 20 temperatures
@@ -95,8 +100,9 @@ plot_fluo_signal <- function(
         showline = TRUE,
         zeroline = FALSE,
         ticks = "outside",
-        tickwidth = 2,
-        ticklen = tick_length_cst)
+        tickwidth = tick_width,
+        ticklen = tick_length,
+        nticks = n_xticks)
 
     expand_y_factor <- 0.12
     expand_y_pos    <- 1 + expand_y_factor
@@ -117,8 +123,9 @@ plot_fluo_signal <- function(
         showline = TRUE,
         zeroline = FALSE,
         ticks = "outside",
-        tickwidth = 2,
-        ticklen = tick_length_cst)
+        tickwidth = tick_width,
+        ticklen = tick_length,
+        nticks = n_yticks)
 
     fig <- plot_ly()
 
@@ -204,22 +211,26 @@ plot_fluo_signal <- function(
 
     tickvals[2] <- round(tickvals[2],2)
 
-     # Set layout and position the colorbar
-    fig <- fig %>% colorbar(
-        title = list(
-            text="[Denaturant] (M)",
-            font=list(size=axis_size-1)
-            ),
-        x = x_legend_pos,   # Horizontal position
-        y = y_legend_pos,   # Vertical position
-        xanchor = "right",  # Anchoring to the right side
-        yanchor = "top",
-        tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
-        ticktext = tickvals,  # Use the same tick values as labels
-        tickfont = list(size = axis_size-2),  # Font size of the ticks
-        len = color_bar_length,  # Length of the color bar
-        orientation = color_bar_orientation,
-        outlinewidth = 0)
+     # Set layout and position the colorbar (conditionally show/hide)
+    if (show_colorbar) {
+        fig <- fig %>% colorbar(
+            title = list(
+                text="[Denaturant] (M)",
+                font=list(size=axis_size-1)
+                ),
+            x = x_legend_pos,   # Horizontal position
+            y = y_legend_pos,   # Vertical position
+            xanchor = "right",  # Anchoring to the right side
+            yanchor = "top",
+            tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
+            ticktext = tickvals,  # Use the same tick values as labels
+            tickfont = list(size = axis_size-2),  # Font size of the ticks
+            len = color_bar_length,  # Length of the color bar
+            orientation = color_bar_orientation,
+            outlinewidth = 0)
+    } else {
+        fig <- fig %>% hide_colorbar()
+    }
 
     fig <- config_fig(
         fig,
@@ -241,6 +252,10 @@ plot_2d <- function(
     show_grid_x=FALSE,
     show_grid_y=FALSE,
     marker_size = 2,
+    n_xticks = 6,
+    n_yticks = 6,
+    tick_length = 8,
+    tick_width = 2,
     x_label="Denaturant (M)",
     y_label="T<sub>m</sub> (ºC) / 1st derivative",
     filename="Tm_versus_denaturant"){
@@ -261,8 +276,9 @@ plot_2d <- function(
         showline = TRUE,
         zeroline = FALSE,
         ticks = "outside",
-        tickwidth = 2,
-        ticklen = tick_length_cst)
+        tickwidth = tick_width,
+        ticklen = tick_length,
+        nticks = n_xticks)
 
     yaxis <- list(title = y_label,
         titlefont = list(size = axis_size),
@@ -271,8 +287,9 @@ plot_2d <- function(
         showline = TRUE,
         zeroline = FALSE,
         ticks = "outside",
-        tickwidth = 2,
-        ticklen = tick_length_cst)
+        tickwidth = tick_width,
+        ticklen = tick_length,
+        nticks = n_yticks)
 
     fig <- fig %>% layout(
         xaxis = xaxis,
@@ -298,7 +315,11 @@ plot_initial_signal_versus_denaturant <- function(
     axis_size=12,
     show_grid_x=FALSE,
     show_grid_y=FALSE,
-    marker_size = 2){
+    marker_size = 2,
+    n_xticks = 6,
+    n_yticks = 6,
+    tick_length = 8,
+    tick_width = 2){
 
     # For each group in signal_df, get the first signal value
     # and the corresponding denaturant value
@@ -319,6 +340,10 @@ plot_initial_signal_versus_denaturant <- function(
         show_grid_x = show_grid_x,
         show_grid_y = show_grid_y,
         marker_size = marker_size,
+        n_xticks = n_xticks,
+        n_yticks = n_yticks,
+        tick_length = tick_length,
+        tick_width = tick_width,
         x_label = "Denaturant (M)",
         y_label = "Initial signal (a.u.)",
         filename = "Initial_signal_versus_denaturant")
