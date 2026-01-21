@@ -18,7 +18,7 @@ source("helpers_R/plot_helpers.R")
 
 function(input, output, session) {
 
-    pySample <- pyChemelt$Sample('test')
+    pySample <- pyChemelt$Monomer('test')
 
     source(paste0(base_dir,"reactives/reactive_values.R"),      local = T)
     source(paste0(base_dir,"reactives/logbook_reactives.R"),    local = T)
