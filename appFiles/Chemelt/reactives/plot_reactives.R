@@ -468,9 +468,10 @@ output$dg_vs_temp <- renderPlotly({
     req(input$table1)
     req(reactives$update_plots)
     req(reactives$signal_df_fitted)
+    req(reactives$dg_df)
 
     fig <- plot_2d(
-        df                      = pySample$dg_df,
+        df                      = reactives$dg_df,
         plot_width              = reactives$plot_width_val,
         plot_height             = reactives$plot_height_val,
         plot_type               = reactives$plot_type_val,

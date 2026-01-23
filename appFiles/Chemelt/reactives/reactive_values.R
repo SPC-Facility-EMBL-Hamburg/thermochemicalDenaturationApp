@@ -6,6 +6,7 @@ reactives <- reactiveValues(
     signal_df_fitted = NULL,  # fitted signal data frame
     signal_df_scaled = NULL,  # scaled signal data frame
     signal_df_fitted_scaled = NULL,  # fitted scaled signal data frame
+    dg_df = NULL,
     find_initial_params = TRUE, # trigger to find initial params
     scaled_tab_shown = FALSE, # whether the scaled tab is shown
     n_rows_conditions_table = 24, # number of rows in the conditions table (default 24, can be modified)

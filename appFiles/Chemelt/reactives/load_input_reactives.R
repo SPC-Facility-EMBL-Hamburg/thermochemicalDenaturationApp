@@ -4,10 +4,23 @@ reset_signal_df <- function(){
     return(NULL)
 }
 
+pandas_to_r_fast <- function(py_df) {
+  cols <- py_df$columns$to_list()
+  r_df <- data.frame(lapply(cols, function(col) py_df[[col]]$to_numpy()))
+  names(r_df) <- cols
+  return(r_df)
+}
+
 generate_signal_df <- function(){
 
-    reactives$signal_df     <- pySample$signal_to_df()
-    reactives$derivative_df <- pySample$signal_to_df(signal_type = "derivative")
+    signal_df     <- pySample$signal_to_df()
+    derivative_df <- pySample$signal_to_df(signal_type = "derivative")
+
+    signal_df     <- pandas_to_r_fast(signal_df)
+    derivative_df <- pandas_to_r_fast(derivative_df)
+
+    reactives$signal_df     <- signal_df
+    reactives$derivative_df <- derivative_df
 
     return(NULL)
 }
@@ -15,7 +28,6 @@ generate_signal_df <- function(){
 observeEvent(input$dsf_input_files, {
 
     withBusyIndicatorServer("Go",{
-
 
         reactives$update_plots <- NULL
 

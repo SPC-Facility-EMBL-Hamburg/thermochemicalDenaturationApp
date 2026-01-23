@@ -111,8 +111,10 @@ plot_fluo_signal <- function(
 
     extra_hover_text <- ' (M)'
 
+    out_n <- min(max_points, n_rows)
+
     # Compute regularly spaced indices
-    idx <- seq(1, n_rows, length.out = min(max_points, n_rows))
+    idx <- seq(1, n_rows, length.out = out_n)
     idx <- round(idx)
 
     # Remove duplicates in idx vector
@@ -690,6 +692,7 @@ plot_fits_and_residuals <- function(
             yanchor = "top",
             tickvals = tickvals,
             ticktext = tickvals,
+            orientation = color_bar_orientation,
             outlinewidth = 0
           )
         ),
@@ -739,6 +742,15 @@ plot_fits_and_residuals <- function(
 
     residual_df$Residual <- residual_df$Signal_obs - residual_df$Signal_fit
 
+    min_s <- min(residual_df$Residual)
+    max_s <- max(residual_df$Residual)
+
+    expand_y_factor_res <- 0.06
+    min_s <- ifelse(min_s > 0, min_s * (1 - expand_y_factor_res), min_s * (1 + expand_y_factor_res))
+    max_s <- ifelse(max_s > 0, max_s * (1 + expand_y_factor_res), max_s * (1 - expand_y_factor_res))
+
+    yticks_pos <- get_axis_ticks(min_s, max_s, n_ticks = n_yticks)
+
     fig_res <- plot_ly() %>%
         add_trace(
             data = residual_df,
@@ -768,7 +780,9 @@ plot_fits_and_residuals <- function(
                 ticks = "outside",
                 tickwidth = tick_width,
                 ticklen = tick_length,
-                nticks = n_yticks
+                tickmode = "array",
+                tickvals = yticks_pos,
+                ticktext = format_axis_labels(yticks_pos, sig = 3)
             ),
             uirevision = "fit"
         )
