@@ -1,7 +1,7 @@
 box(title = "Input", width = 3, solidHeader = T, status = "primary", 
     fluidRow(
       
-      column(11, p(HTML("<b>1. DSF files </b>"),
+      column(10, p(HTML("<b>1. DSF files </b>"),
                    span(shiny::icon("info-circle"), id = "info_uu1-1"),
                    fileInput("dsf_input_files", NULL,
                    accept   = c(".xlsx",".zip",".xls",".csv",".txt",'.json','.supr'),
@@ -10,6 +10,13 @@ box(title = "Input", width = 3, solidHeader = T, status = "primary",
                    tooltip = "Check the User Guide to understand the format of the input files. 
                    Hint: Multiple files can be uploaded at once.",
                    placement = "right"))),
+
+      # Little hack to use the withBusyIndicatorUI function (loading spinner)
+      # This button is not visible in the UI
+      column(2, p(HTML("<b><br></b>")),
+                  withBusyIndicatorUI(
+        shinyjs::hidden(actionButton("Go","2. Load data!",class = "btn-primary")))),
+      # End of Little hack to use the withBusyIndicatorUI function (loading spinner)
 
       column(4, p(HTML("<b>Signal</b>"),
                   selectInput("which", NULL,

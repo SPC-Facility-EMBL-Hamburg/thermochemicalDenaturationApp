@@ -14,60 +14,65 @@ generate_signal_df <- function(){
 
 observeEvent(input$dsf_input_files, {
 
-    reactives$update_plots <- NULL
+    withBusyIndicatorServer("Go",{
 
-    reset_signal_df()
 
-    files_path <- input$dsf_input_files$datapath
-    read_file_status <- pySample$read_multiple_files(files_path)
+        reactives$update_plots <- NULL
 
-    if (!read_file_status) {
-        popUpWarning("Error reading one or more files. Please check that all files share the same signal type (e.g., 350nm)")
-    }
+        reset_signal_df()
 
-    logbook_txt <- paste0("Files imported: ",paste(input$dsf_input_files$name, collapse = ", "))
+        files_path <- input$dsf_input_files$datapath
+        read_file_status <- pySample$read_multiple_files(files_path)
 
-    write_logbook(logbook_txt,include_time = TRUE)
+        if (!read_file_status) {
+            popUpWarning("Error reading one or more files. Please check that all files share the same signal type (e.g., 350nm)")
+        }
 
-    updateSelectInput(session, "which",choices  = pySample$signals)
+        logbook_txt <- paste0("Files imported: ",paste(input$dsf_input_files$name, collapse = ", "))
 
-    pySample$set_signal(pySample$signals[1])
+        write_logbook(logbook_txt,include_time = TRUE)
 
-    # Find max and min temperature
-    min_temp <- floor(pySample$global_min_temp) - 5
-    max_temp <- ceiling(pySample$global_max_temp) + 5
+        updateSelectInput(session, "which",choices  = pySample$signals)
 
-    # Update the slider range
-    updateSliderInput(session, "sg_range", min = min_temp, max = max_temp,value = c(min_temp, max_temp))
+        pySample$set_signal(pySample$signals[1])
 
-    conditions  <- unlist(pySample$conditions)
+        # Find max and min temperature
+        min_temp <- floor(pySample$global_min_temp) - 5
+        max_temp <- ceiling(pySample$global_max_temp) + 5
 
-    n_conditions <- length(conditions)
+        # Update the slider range
+        updateSliderInput(session, "sg_range", min = min_temp, max = max_temp,value = c(min_temp, max_temp))
 
-    if (n_conditions > 24 * 4) {
+        conditions  <- unlist(pySample$conditions)
 
-        reactives$n_rows_conditions_table <- ifelse(n_conditions <= 192,48,96)
+        n_conditions <- length(conditions)
 
-    }
+        if (n_conditions > 24 * 4) {
 
-    tables <- get_renderRHandsontable_list_filled(conditions,reactives$n_rows_conditions_table,pySample$labels)
+            reactives$n_rows_conditions_table <- ifelse(n_conditions <= 192,48,96)
 
-    output$table4 <- tables[[4]]
-    output$table3 <- tables[[3]]
-    output$table2 <- tables[[2]]
-    output$table1 <- tables[[1]]
+        }
 
-    pySample$set_denaturant_concentrations()
-    pySample$select_conditions(normalise_to_global_max=input$rescale)
-    pySample$estimate_derivative()
-    pySample$guess_Tm()
+        tables <- get_renderRHandsontable_list_filled(conditions,reactives$n_rows_conditions_table,pySample$labels)
 
-    generate_signal_df()
+        output$table4 <- tables[[4]]
+        output$table3 <- tables[[3]]
+        output$table2 <- tables[[2]]
+        output$table1 <- tables[[1]]
 
-    Sys.sleep(0.5)
-    reactives$update_plots <- TRUE
-    reactives$signal_df_fitted <- NULL
-    reactives$find_initial_params <- TRUE
+        pySample$set_denaturant_concentrations()
+        pySample$select_conditions(normalise_to_global_max=input$rescale)
+        pySample$estimate_derivative()
+        pySample$guess_Tm()
+
+        generate_signal_df()
+
+        Sys.sleep(0.5)
+        reactives$update_plots <- TRUE
+        reactives$signal_df_fitted <- NULL
+        reactives$find_initial_params <- TRUE
+
+    })
 })
 
 
