@@ -42,7 +42,7 @@ reactives <- reactiveValues(
     x_legend_pos_val = 1, # x legend position
     y_legend_pos_val = 1, # y legend position
     color_bar_length_val = 0.5, # color bar length
-    color_bar_orientation_val = 'horizontal', # color bar orientation
+    color_bar_orientation_val = 'h', # color bar orientation, 'h' or 'v'
     show_colorbar_val = TRUE, # show colorbar
     show_grid_x_val = FALSE, # show x grid
     show_grid_y_val = FALSE, # show y grid

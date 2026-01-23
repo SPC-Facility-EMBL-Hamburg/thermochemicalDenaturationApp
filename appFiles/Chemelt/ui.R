@@ -58,7 +58,8 @@ shinyUI(
                         tags$head(tags$style("
                         #fitted_signal{height:650px !important;}
                         #dg_vs_temp{height:650px !important;}
-                        #fitted_signal_den_in_x_axis{height:650px !important;}
+                        #fitted_signal_residuals{height:650px !important;}
+                        #fitted_signal_and_residuals{height:650px !important;}
                         ")),
 
                         source("ui_files/ui_fit_box.R",local = TRUE)$value,
