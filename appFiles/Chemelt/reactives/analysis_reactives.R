@@ -2,6 +2,8 @@ observeEvent(input$n_residues,{
 
     reactives$cp_value <- input$n_residues * 0.0148 - 0.1267
 
+    write_logbook(paste0("Number of residues set to: ",input$n_residues))
+
 })
 
 observeEvent(input$btn_call_fit,{
@@ -9,8 +11,14 @@ observeEvent(input$btn_call_fit,{
     req(input$table1)
     req(reactives$signal_df)
 
-    native_dependence   <- input$native_dependence
-    unfolded_dependence <- input$unfolded_dependence
+    write_logbook( "Fitting process started")
+
+    native_baseline_type <- input$native_dependence
+    unfolded_baseline_type <- input$unfolded_dependence
+
+    write_logbook(paste0("Native baseline dependence set to: ",native_baseline_type))
+
+    write_logbook(paste0("Unfolded baseline dependence set to: ",unfolded_baseline_type))
 
     reactives$signal_df_fitted <- NULL
     output$fitted_params       <- NULL
@@ -27,8 +35,10 @@ observeEvent(input$btn_call_fit,{
 
     pySample$max_points <- max_points
 
-    pySample$reset_fittings_results()
+    logbook_txt <- paste0("Maximum points per curve set to: ", ifelse(is.null(max_points), "All points", max_points))
+    write_logbook(logbook_txt,include_time = FALSE)
 
+    pySample$reset_fittings_results()
 
     # Return an error if the user selected the global global global model but wants to use the Ratio signal
     if (input$unfolding_model == "global-global-global" & "Ratio" %in% pySample$signal_names) {
@@ -64,20 +74,21 @@ observeEvent(input$btn_call_fit,{
           Please wait some minutes...'
         )
 
-        native_baseline_type <- input$native_dependence
-        unfolded_baseline_type <- input$unfolded_dependence
-
         pySample$n_residues <- input$n_residues
 
         if (reactives$find_initial_params) {
         # Use a simple model to guess good initial thermodynamic parameters
 
+              write_logbook("Guessing initial parameters using linear baselines...")
+              
               pySample$guess_initial_parameters(
               native_baseline_type     = 'linear',
               unfolded_baseline_type   = 'linear',
               window_range_native = input$baseline_window_native,
               window_range_unfolded = input$baseline_window_unfolded
               )
+              
+              write_logbook("Initial parameters estimation completed.")
 
             if (input$unfolding_model != "global-local-local") {
                 popUpInfo('The search for the initial parameters is finished. Please wait some minutes...')
@@ -86,6 +97,12 @@ observeEvent(input$btn_call_fit,{
             reactives$find_initial_params <- FALSE
         }
 
+        write_logbook(paste0("Fitting model selected: ",input$unfolding_model))
+        
+        write_logbook(paste0("Baseline window (native): ",paste(input$baseline_window_native,collapse = " - ")))
+        write_logbook(paste0("Baseline window (unfolded): ",paste(input$baseline_window_unfolded,collapse = " - ")))
+        
+        write_logbook("Estimating baseline parameters...")
 
         pySample$estimate_baseline_parameters(
             native_baseline_type     = native_baseline_type,
@@ -93,6 +110,8 @@ observeEvent(input$btn_call_fit,{
             window_range_native     = input$baseline_window_native,
             window_range_unfolded   = input$baseline_window_unfolded
         )
+        
+        write_logbook("Baseline parameters estimated.")
 
         user_cp_limits <- NULL
         user_dh_limits <- NULL
@@ -106,24 +125,32 @@ observeEvent(input$btn_call_fit,{
             if (input$fix_cp_option == 'set_cp_bounds') {
 
                 user_cp_limits <- c(input$cp_lower_limit, input$cp_upper_limit)
+                write_logbook(paste0("User-defined Cp limits: ",paste(user_cp_limits,collapse = " - ")))
 
             }
 
             if (input$fix_tm_option == 'set_tm_bounds') {
 
                 user_tm_limits <- c(input$tm_lower_limit, input$tm_upper_limit)
+                write_logbook(paste0("User-defined Tm limits: ",paste(user_tm_limits,collapse = " - ")))
 
             }
 
             if (input$fix_dh_option == 'set_dh_bounds') {
 
                 user_dh_limits <- c(input$dh_lower_limit, input$dh_upper_limit)
+                write_logbook(paste0("User-defined ΔH limits: ",paste(user_dh_limits,collapse = " - ")))
 
             }
 
           # If cp value is given, it will be used as fixed parameter
           # The bounds are ignored in this case
-          if (input$fix_cp_option == 'fix_cp') cp_value <- input$cp_value
+          if (input$fix_cp_option == 'fix_cp') {
+            
+              cp_value <- input$cp_value_fixed
+              write_logbook(paste0("Cp fixed to user-defined value: ",cp_value))
+
+          }
 
         }
 
@@ -137,6 +164,8 @@ observeEvent(input$btn_call_fit,{
         if (input$unfolding_model %in% c("global-global-local", "global-global-global")) {
 
             pySample$set_signal_id()
+            
+            write_logbook("Fitting with global-global model (global slopes, local intercepts)...")
 
             result <- tryCatch(
                 {
@@ -157,6 +186,8 @@ observeEvent(input$btn_call_fit,{
             )
 
             if (!is.null(result)) return(NULL)
+            
+            write_logbook("Global-global fitting completed.")
 
         }
 
@@ -164,6 +195,8 @@ observeEvent(input$btn_call_fit,{
         if (input$unfolding_model == "global-global-global") {
             popUpInfo('The fitting with global slopes and local intercepts is finished.
             Now the data will be fitted with global slopes and global intercepts. Please wait...')
+            
+            write_logbook("Fitting with global-global-global model (global slopes, global intercepts)...")
 
             result <- tryCatch(
                 {
@@ -184,8 +217,12 @@ observeEvent(input$btn_call_fit,{
             )
 
             if (!is.null(result)) return(NULL)
+            
+            write_logbook("Global-global-global fitting completed.")
 
             if (input$fit_scale_factor) {
+
+                write_logbook(paste0("Scale factor fitting activated."))
 
                 tab_panel_to_add <- tabPanel(
                     "Fitted signal (rescaled)",
@@ -235,6 +272,8 @@ observeEvent(input$btn_call_fit,{
        reactives$dg_df <- dg_df
 
         popUpSuccess('✅ Fitting completed!')
+
+        write_logbook("Fitting completed successfully.")
 
     })
 

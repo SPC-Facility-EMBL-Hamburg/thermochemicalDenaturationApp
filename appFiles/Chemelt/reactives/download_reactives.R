@@ -53,3 +53,4 @@ output$download_signal_fitted <- downloadHandler(
 
     }
 )
+

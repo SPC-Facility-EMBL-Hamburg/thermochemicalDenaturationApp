@@ -4,7 +4,7 @@ box(
     fluidRow(
         column(8, p(style = "font-size: 120%",HTML(""),downloadLink('download_params_table', 'Fitted parameters'))),
         column(8, p(style = "font-size: 120%",HTML(""),downloadLink('download_signal', 'Signal'))),
-        column(8, p(style = "font-size: 120%",HTML(""),downloadLink('download_signal_fitted', 'Fitted signal')))
-
+        column(8, p(style = "font-size: 120%",HTML(""),downloadLink('download_signal_fitted', 'Fitted signal'))),
+        column(8, p(style = "font-size: 120%",HTML(""),downloadLink('download_logboook', 'Logbook')))
     )
 )

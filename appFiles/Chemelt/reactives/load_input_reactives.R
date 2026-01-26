@@ -95,7 +95,7 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
     reactives$update_plots <- NULL
     pySample$set_signal(input$which)
 
-    logbook_txt <- paste0("Temperature range set to: ",paste(input$sg_range[1], input$sg_range[2], sep = " - "))
+    logbook_txt <- paste0("Signal set to: ",input$which)
     write_logbook(logbook_txt,include_time = FALSE)
 
     include_and_conc_vectors <- get_include_and_conc_vectors(
@@ -104,6 +104,12 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
 
     pySample$select_conditions(include_and_conc_vectors$include_vector,normalise_to_global_max=input$rescale)
     pySample$set_temperature_range(input$sg_range[1], input$sg_range[2])
+
+    logbook_txt <- paste0("Selecting conditions: ",paste(which(include_and_conc_vectors$include_vector), collapse = ", "))
+    write_logbook(logbook_txt,include_time = FALSE)
+
+    logbook_txt <- paste0("Rescaling set to: ",input$rescale)
+    write_logbook(logbook_txt,include_time = FALSE)
 
     logbook_txt <- paste0("Temperature range set to: ",paste(input$sg_range[1], input$sg_range[2], sep = " - "))
     write_logbook(logbook_txt,include_time = FALSE)
@@ -163,6 +169,10 @@ observeEvent(list(input$table1,input$table2,input$table3,input$table4), {
     write_logbook(logbook_txt,include_time = FALSE)
 
     pySample$select_conditions(include_and_conc_vectors$include_vector,normalise_to_global_max=input$rescale)
+    
+    logbook_txt <- paste0("Selecting conditions: ",paste(which(include_and_conc_vectors$include_vector), collapse = ", "))
+    write_logbook(logbook_txt,include_time = FALSE)
+    
     pySample$estimate_derivative()
     pySample$guess_Tm()
 
