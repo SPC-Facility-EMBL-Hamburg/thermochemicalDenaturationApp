@@ -149,8 +149,6 @@ directly (Hugues Bedouelle, 2016; Gabriel Žoldák, 2017).
 
 
 
-
-
 </div>
 
 <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link" onclick="myFunction('models')">Models <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
@@ -175,126 +173,194 @@ directly (Hugues Bedouelle, 2016; Gabriel Žoldák, 2017).
 
   <div id="modelsFluorescenceSignal" style="display:none">
 
+    <p class="vf-intro__text">  
+  <h3>
+    Free energy of unfolding
+  </h3>
+</p>
+    
     <p class="vf-intro__text">
-        Fluorescence melting curves are fitted using a simple two-state folding model where the signal corresponds to a linear combination
-        of the amount of folded and unfolded protein.
+    We start by assuming that the protein is a monomer that (un)folds reversibly 
+    via a two-state process. 
+    The fraction of protein in the native ($f_n$) and denatured ($f_u$) states depend on the 
+    unfolding equilibrium constant $K$.
     </p>
 
 $$
 \large{
-    Signal(T,D) = Signal_N(T,D) + Signal_U(T,D)
-   }
+    f_n(T,D) = \frac{1}{1 + K(T,D)}
+}
+$$
+
+$$
+\large{
+    f_u(T,D) = 1 - f_n(T,D)
+}
 $$
 
 <p class="vf-intro__text">
-  where $Signal_N(T,D)$ and $Signal_U(T,D)$ are the signals of the folded and 
-  unfolded protein at temperature $T$ (in Kelvin units) and denaturant concentration $D$ (in molar units).
-  $Signal_{N/U}(T,D)$ can be defined in three different ways, 
-  depending if local or shared parameters are used for the native and unfolded
-  states baselines. 
-</p>   
-
-<p class="vf-intro__text">
-    <b> Local baselines and local slopes: </b>
+  where $T$ is the temperature in Kelvin units and D is the denaturant concentration in molar units. The unfolding equilibrium constant $K$ is related to the Gibbs free energy $\Delta G$ by:
 </p>
 
 $$
 \large{
-    Signal_{N/U}(T,D) = f_{N/U}(T,D) \cdot (b_{N/U}(i) + k_{N/U}(i) \cdot 
-    dT + q_{N/U}(i) \cdot dT^2)
+    K(T,D) = \exp\!\left( -\frac{\Delta G(T,D)}{R\,T} \right)
+}
+$$
+
+<p class="vf-intro__text">
+ where $R$ is the gas constant. If only chemical denaturation is considered, $\Delta G$ can be estimated using the Linear Extrapolation Model (LEM):
+</p>
+
+$$
+\large{
+  \Delta G(D) = \Delta G_{H_2O} - m \cdot D
+}
+$$
+
+<p class="vf-intro__text">
+where $m$ is an empirical parameter that allows modelling $\Delta G$ with a linear dependence on denaturant concentration. $\Delta G_{H_2O}$ is the free energy of unfolding in the absence of a denaturant agent. On the other hand, if thermal denaturation is considered, the free energy of unfolding can be calculated as indicated below:
+</p>
+
+$$
+\large{
+  \Delta G(T) = \Delta H_m \cdot (1 - \frac{T}{T_m}) + \Delta C_{p} \cdot (T - T_m - T \cdot \ln(\frac{T}{T_m}))
+}
+$$
+
+<p class="vf-intro__text"> 
+  where $\Delta H$ is the enthalpy of unfolding, $T_m$ is the temperature of melting, and $\Delta C_p$ is the heat capacity of unfolding. The combination of both denaturation methods results in the expression:  
+</p>
+
+$$
+\large{
+  \Delta G(T,D) = \Delta H_m \cdot (1 - \frac{T}{T_m}) + \Delta C_{p} \cdot (T - T_m - T \cdot \ln(\frac{T}{T_m})) - m \cdot D
+}
+$$
+
+<p class="vf-intro__text">  
+  <h3>
+    Equation of the signal    
+  </h3>
+</p>
+
+<p class="vf-intro__text">  
+  The total signal is assumed to be a linear combination of the signal produced by the different protein states weighted by their mole fractions. 
+  </p>
+
+  $$
+\large{
+    Signal(T,D) = S_n(T,D) \cdot f_n(T,D) + S_u(T,D) \cdot f_u(T,D)
    }
 $$
 
 <p class="vf-intro__text">
-where $f_{N/U}(T,D)$ is the fraction of native/unfolded protein at temperature $T$ and 
+  where $S_n(T,D)$ and $S_u(T,D)$ describe the signal dependence on temperature
+  $T$ (in Kelvin units) and denaturant concentration $D$ (in molar units) for
+  the native and unfolded states, respectively. The background signal is assumed
+  to be negligible. The temperature
+  dependence of the signal can be modelled using a constant, linear, quadratic
+  or exponential function. The baselines parameters can be either local
+  (different for each curve) or shared (same for all curves). The following alternatives are implemented:
+</p>
+
+<p class="vf-intro__text">
+  <h3>Local baselines and local slopes </h3>
+</p>
+
+<p class="vf-intro__text">
+  In this model, each unfolding curve with index $i$ has its 
+  own set of baseline parameters.
+</p>
+
+$$
+\large{
+    Signal_{x,i}(T,D) = f_{x}(T,D) \cdot (b_{x,i} + k_{x,i} \cdot 
+    dT + q_{x,i} \cdot dT^2) (\text{quadratic})
+   }
+$$
+
+$$
+\large{
+    Signal_{x,i}(T,D) = f_{x}(T,D) \cdot (\gamma_{x,i} + \delta_{x,i}\, e^{-\alpha_{x,i}\,\Delta T}) (\text{exponential})
+   }
+$$
+
+<p class="vf-intro__text">
+where $f_{x}(T,D)$ is the fraction of native ($x=n$) or unfolded ($x=u$) protein at temperature $T$ and 
 denaturant concentration $D$,
-$b_{N/U}(i)$ is the native/unfolded baseline of the curve $i$,
-$k_{N/U}(i)$ is the slope of the native/unfolded baseline of the curve $i$,
-$q_{N/U}(i)$ is the quadratic term of the native/unfolded baseline of the curve $i$.
-Here, each curve has its own set of baseline parameters, even if they
-have the same denaturant concentration.
-$dT$ is the difference between the temperature $T$ and a reference temperature ($298K$).
+and $dT$ is the difference between the temperature $T$ and a reference temperature ($298K$).
 </p>
 
 <p class="vf-intro__text">
-<b> Local baselines and shared slopes: </b>
+<h3> Local baselines and shared slopes </h3>
+</p>
+
+<p class="vf-intro__text">
+In this model, the slope terms ($k_{x}$ and $q_{x}$ or $\delta_{x}$ and $\alpha_{x}$) are shared among all curves,
+but the intercept terms are local to each curve. 
 </p>
 
 $$
 \large{
-    Signal_{N/U}(T,D) = f_{N/U}(T,D) \cdot (b_{N/U}(i) + k_{N/U} \cdot 
-    dT + q_{N/U} \cdot dT^2)
-   }
-$$
-
-<p class="vf-intro__text">
-where $k_{N/U}$ is the slope of the native/unfolded baseline shared by all curves,
-and $q_{N/U}$ is the quadratic term of the native/unfolded baseline shared by all curves.
-</p>
-
-<p class="vf-intro__text">
-<b> Shared baselines and shared slopes: </b>
-</p>
-
-$$
-\large{
-    Signal_{N/U}(T,D) = f_{N/U}(T,D) \cdot 
-    (a_{N/U} + b_{N/U} \cdot dT + c_{N/U} \cdot D + d_{N/U} \cdot dT^2)
-   }
-$$
-
-
-<p class="vf-intro__text">
-where $a_{N/U}$ is the intercept of the native/unfolded baseline shared by all curves,
-$b_{N/U}$ is the linear term on temperature of the native/unfolded baseline shared by all curves,
-$c_{N/U}$ is the linear term on denaturant concentration of the native/unfolded baseline shared by all curves,
-and $d_{N/U}$ is the quadratic term on temperature of the native/unfolded baseline shared by all curves.
-The difference with the previous model is that we include a linear dependence on the denaturant concentration.
-</p>
-
-<p class="vf-intro__text">
-The fraction of native and unfolded protein is given by:
-</p>
-
-$$
-\large{
-    f_N(T,D) = \frac{1}{1 + K_u(T,D)}
+    Signal_{x,i}(T,D) = f_{x}(T,D) \cdot (b_{x,i} + k_{x} \cdot 
+    dT + q_{x} \cdot dT^2) (\text{quadratic})
    }
 $$
 
 $$
 \large{
-    f_U(T,D) = 1 - f_N(T,D)
+    Signal_{x,i}(T,D) = f_{x}(T,D) \cdot (\gamma_{x,i} + \delta_{x}\, e^{-\alpha_{x}\,\Delta T}) (\text{exponential})
    }
 $$
 
+
 <p class="vf-intro__text">
-where $K_u(T,D)$ is the equilibrium constant between the native and unfolded states at temperature $T$ and denaturant concentration $D$.
-$K_u(T,D)$ is related to the Gibbs free energy difference between the native and unfolded states, $\Delta G(T,D)$, by:
+<h3> Shared baselines and shared slopes </h3>
+</p>
+
+<p class="vf-intro__text">  
+  In this model, a linear dependence on denaturant concentration is included in the baseline equations.
+  All baseline parameters are shared among all curves.
 </p>
 
 $$
 \large{
-    K_u(T,D) = e^{-\frac{\Delta G(T,D)}{RT}}
+    Signal_{x}(T,D) = f_{x}(T,D) \cdot 
+    (a_{x} + b_{x} \cdot dT + c_{x} \cdot D + d_{x} \cdot dT^2) (\text{quadratic})
+   }
+$$
+
+$$
+\large{
+    Signal_{x}(T,D) = f_{x}(T,D) \cdot 
+    (\gamma_{x} + \delta_{x}\, e^{-\alpha_{x}\,\Delta T} + c_{x} \cdot D) (\text{exponential})
    }
 $$
 
 <p class="vf-intro__text">
-where $R$ is the gas constant and $T$ is the temperature in Kelvin.
-$\Delta G(T,D)$ is calculated using the following equation:
+<h3> Shared baselines and shared slopes with scale factor </h3>
+</p>
+
+
+<p class="vf-intro__text">  
+  To account for protein concentration errors or differences in detection 
+  sensitivity across positions, a scaling factor $s_i$ is included for each curve $i$.
 </p>
 
 $$
 \large{
-  \Delta G(T,D) = \Delta H_m \cdot (1 - \frac{T}{T_m}) + \Delta C_{p} \cdot (T - T_m - T \cdot \ln(\frac{T}{T_m})) - D \cdot (m)
+    Signal_{x,i}(T,D) = s_i \cdot f_{x}(T,D) \cdot 
+    (a_{x} + b_{x} \cdot dT + c_{x} \cdot D + d_{x} \cdot dT^2) (\text{quadratic})
    }
-$$
+$$  
 
-<p class="vf-intro__text">
-where $\Delta H_m$ is the enthalpy change at the melting temperature $T_m$,
-$\Delta C_p$ is the change in heat capacity,
-$m$ is the slope of the linear dependence of $\Delta G$ on the denaturant concentration. 
-</p>
+$$
+\large{
+    Signal_{x,i}(T,D) = s_i \cdot f_{x}(T,D) \cdot 
+    (\gamma_{x} + \delta_{x}\, e^{-\alpha_{x}\,\Delta T} + c_{x} \cdot D) (\text{exponential})
+   }
+$$  
 
 </ul>
 
