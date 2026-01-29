@@ -22,19 +22,6 @@ reactives <- reactiveValues(
     dh_upp_bound = 450, # DH upper bound
     cp_low_bound = 0.1, # Cp lower bound
     cp_upp_bound = 6, # Cp upper bound
-    font_size = 16, # default font size for plots
-    legend_x_pos = 1, # default legend x position
-    legend_y_pos = 1, # default legend y position
-    show_x_grid = FALSE, # whether to show x grid
-    show_y_grid = FALSE,  # whether to show y grid
-    marker_size = 7, # default marker size
-    color_bar_orientation = 'horizontal', # default color bar orientation
-    color_bar_length = 0.5, # default color bar length
-    max_points = 2000, # maximum number of points to plot
-    file_type = 'png',
-    line_width = 3, # default line width for plots
-    plot_width = 18, # default plot width
-    plot_height = 11, # default plot height
     # Unified plot configuration (used for both regular and fit plots)
     plot_width_val = 1000, # plot width in pixels
     plot_height_val = 600, # plot height in pixels
