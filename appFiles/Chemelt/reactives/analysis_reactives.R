@@ -2,8 +2,6 @@ observeEvent(input$n_residues,{
 
     reactives$cp_value <- input$n_residues * 0.0148 - 0.1267
 
-    write_logbook(paste0("Number of residues set to: ",input$n_residues))
-
 })
 
 observeEvent(input$btn_call_fit,{
@@ -13,12 +11,16 @@ observeEvent(input$btn_call_fit,{
 
     write_logbook( "Fitting process started")
 
+    write_logbook(paste0("Baseline window (native): ",input$baseline_window_native))
+    write_logbook(paste0("Baseline window (unfolded): ",input$baseline_window_unfolded))
+
     native_baseline_type <- input$native_dependence
     unfolded_baseline_type <- input$unfolded_dependence
 
     write_logbook(paste0("Native baseline dependence set to: ",native_baseline_type))
-
     write_logbook(paste0("Unfolded baseline dependence set to: ",unfolded_baseline_type))
+
+    write_logbook(paste0("Number of residues set to: ",input$n_residues))
 
     reactives$signal_df_fitted <- NULL
     output$fitted_params       <- NULL
@@ -79,16 +81,12 @@ observeEvent(input$btn_call_fit,{
         if (reactives$find_initial_params) {
         # Use a simple model to guess good initial thermodynamic parameters
 
-              write_logbook("Guessing initial parameters using linear baselines...")
-              
               pySample$guess_initial_parameters(
               native_baseline_type     = 'linear',
               unfolded_baseline_type   = 'linear',
               window_range_native = input$baseline_window_native,
               window_range_unfolded = input$baseline_window_unfolded
               )
-              
-              write_logbook("Initial parameters estimation completed.")
 
             if (input$unfolding_model != "global-local-local") {
                 popUpInfo('The search for the initial parameters is finished. Please wait some minutes...')
@@ -98,11 +96,6 @@ observeEvent(input$btn_call_fit,{
         }
 
         write_logbook(paste0("Fitting model selected: ",input$unfolding_model))
-        
-        write_logbook(paste0("Baseline window (native): ",paste(input$baseline_window_native,collapse = " - ")))
-        write_logbook(paste0("Baseline window (unfolded): ",paste(input$baseline_window_unfolded,collapse = " - ")))
-        
-        write_logbook("Estimating baseline parameters...")
 
         pySample$estimate_baseline_parameters(
             native_baseline_type     = native_baseline_type,
@@ -110,8 +103,6 @@ observeEvent(input$btn_call_fit,{
             window_range_native     = input$baseline_window_native,
             window_range_unfolded   = input$baseline_window_unfolded
         )
-        
-        write_logbook("Baseline parameters estimated.")
 
         user_cp_limits <- NULL
         user_dh_limits <- NULL
@@ -164,8 +155,6 @@ observeEvent(input$btn_call_fit,{
         if (input$unfolding_model %in% c("global-global-local", "global-global-global")) {
 
             pySample$set_signal_id()
-            
-            write_logbook("Fitting with global-global model (global slopes, local intercepts)...")
 
             result <- tryCatch(
                 {
@@ -186,8 +175,6 @@ observeEvent(input$btn_call_fit,{
             )
 
             if (!is.null(result)) return(NULL)
-            
-            write_logbook("Global-global fitting completed.")
 
         }
 
@@ -195,8 +182,6 @@ observeEvent(input$btn_call_fit,{
         if (input$unfolding_model == "global-global-global") {
             popUpInfo('The fitting with global slopes and local intercepts is finished.
             Now the data will be fitted with global slopes and global intercepts. Please wait...')
-            
-            write_logbook("Fitting with global-global-global model (global slopes, global intercepts)...")
 
             result <- tryCatch(
                 {
@@ -217,8 +202,6 @@ observeEvent(input$btn_call_fit,{
             )
 
             if (!is.null(result)) return(NULL)
-            
-            write_logbook("Global-global-global fitting completed.")
 
             if (input$fit_scale_factor) {
 

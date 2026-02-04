@@ -54,3 +54,14 @@ output$download_signal_fitted <- downloadHandler(
     }
 )
 
+output$download_log_book <-   downloadHandler(
+  filename = function() {
+    paste0("logbook_Chemelt_",
+           Sys.Date(),".txt")},
+  content  = function(file) {
+
+    lines <- unlist(reactives$logbook)
+    lines <- purge_logbook_lines(lines)
+
+    cat(lines,file = file, sep = "\n")
+  })

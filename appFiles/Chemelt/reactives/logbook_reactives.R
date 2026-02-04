@@ -10,3 +10,4 @@ write_logbook <- function(record_str,include_time=FALSE) {
 
     return(NULL)
 }
+
