@@ -485,7 +485,10 @@ output$dg_vs_temp <- renderPlotly({
         tick_width              = reactives$tick_width_val,
         x_label                 = "Temperature (°C)",
         y_label                 = "ΔG (kcal/mol)",
-        filename                = "dg_vs_temp"
+        filename                = "dg_vs_temp",
+        y_zeroline              = TRUE,
+        y_zeroline_color        = "gray",
+        y_zeroline_width        = reactives$plot_line_width_val
     )
 
     return(fig)

@@ -68,7 +68,7 @@ box(title = "Input", width = 3, solidHeader = T, status = "primary",
                   span(shiny::icon("info-circle"), id = "info_uu1-5"),
                   checkboxInput("fill_table", "", FALSE),
                   tippy::tippy_this(elementId = "info_uu1-5",
-                                    tooltip = "Select this option to complete the \'Position versus Concentration\'
+                                    tooltip = "Select this option to complete the \'[Denaturant]\'
                                             Table using a constant dilution factor
                                             and an initial ligand concentration",placement = "right")))
       

@@ -482,7 +482,10 @@ plot_2d <- function(
     tick_width = 2,
     x_label="Denaturant (M)",
     y_label="T<sub>m</sub> (ºC) / 1st derivative",
-    filename="Tm_versus_denaturant"){
+    filename="Tm_versus_denaturant",
+    y_zeroline = FALSE,               # whether to enable y-axis zeroline
+    y_zeroline_color = "red",
+    y_zeroline_width = 2){
 
     # The first column is the y-value
     # The second column is the x-value
@@ -509,12 +512,15 @@ plot_2d <- function(
         ticktext = format_axis_labels(get_axis_ticks(min(df[,2]), max(df[,2]), n_ticks = n_xticks), sig = 3)
         )
 
+    # Use the y_zeroline parameters to populate the yaxis zeroline properties
     yaxis <- list(title = y_label,
         titlefont = list(size = axis_size),
         tickfont = list(size = axis_size),
         showgrid = show_grid_y,
         showline = TRUE,
-        zeroline = FALSE,
+        zeroline = isTRUE(y_zeroline),
+        zerolinecolor = y_zeroline_color,
+        zerolinewidth = y_zeroline_width,
         ticks = "outside",
         tickwidth = tick_width,
         ticklen = tick_length,
@@ -522,7 +528,6 @@ plot_2d <- function(
         tickvals = get_axis_ticks(min(df[,1]), max(df[,1]), n_ticks = n_yticks),
         ticktext = format_axis_labels(get_axis_ticks(min(df[,1]), max(df[,1]), n_ticks = n_yticks), sig = 3)
         )
-
 
     fig <- fig %>% layout(
         xaxis = xaxis,
