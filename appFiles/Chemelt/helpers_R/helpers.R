@@ -28,6 +28,14 @@ delete_duplicate_pattern <- function(lines,pattern) {
   return(lines)
 }
 
+
+pandas_to_r <- function(py_df) {
+
+    if (is.null(py_df)) return(NULL)
+
+    return(reticulate::py_to_r(py_df))
+}
+
 find_all_blocks <- function(lines, pattern_start, pattern_end) {
     starts <- which(grepl(pattern_start, lines))
     ends   <- which(grepl(pattern_end, lines))

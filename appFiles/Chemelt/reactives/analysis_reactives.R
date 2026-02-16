@@ -217,12 +217,12 @@ observeEvent(input$btn_call_fit,{
                 reactives$scaled_tab_shown <- TRUE
 
                 df_scaled <- pySample$signal_to_df(scaled = TRUE)
-                df_scaled <- pandas_to_r_fast(df_scaled)
+                df_scaled <- pandas_to_r(df_scaled)
 
                 reactives$signal_df_scaled <- df_scaled
 
                 fitted_df_scaled <- pySample$signal_to_df(signal_type = "fitted",scaled = TRUE)
-                fitted_df_scaled <- pandas_to_r_fast(fitted_df_scaled)
+                fitted_df_scaled <- pandas_to_r(fitted_df_scaled)
 
                 reactives$signal_df_fitted_scaled <- fitted_df_scaled
 
@@ -233,25 +233,25 @@ observeEvent(input$btn_call_fit,{
         # We create the dataset again, in case a subset of data was used
         if (input$fit_subset) {
             signal_df <- pySample$signal_to_df()
-            signal_df <- pandas_to_r_fast(signal_df)
+            signal_df <- pandas_to_r(signal_df)
             reactives$signal_df <- signal_df
         }
 
         fitted_df <- pySample$signal_to_df(signal_type = "fitted")
-        fitted_df <- pandas_to_r_fast(fitted_df)
+        fitted_df <- pandas_to_r(fitted_df)
 
         reactives$signal_df_fitted <- fitted_df
 
         # Include the fitted parameters into a Table
         fitted_parameters <- pySample$params_df
-        fitted_parameters <- pandas_to_r_fast(fitted_parameters)
+        fitted_parameters <- pandas_to_r(fitted_parameters)
 
         output$fitted_params <- renderTable({
             fitted_parameters
         },digits=4)
 
        dg_df <- pySample$dg_df
-       dg_df <- pandas_to_r_fast(dg_df)
+       dg_df <- pandas_to_r(dg_df)
        reactives$dg_df <- dg_df
 
         popUpSuccess('✅ Fitting completed!')
