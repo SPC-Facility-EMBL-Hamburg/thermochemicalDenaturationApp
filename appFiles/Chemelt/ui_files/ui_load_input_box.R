@@ -1,7 +1,7 @@
 box(title = "Input", width = 3, solidHeader = T, status = "primary", 
     fluidRow(
       
-      column(10, p(HTML("<b>1. DSF files </b>"),
+      column(10, p(HTML("<b>1. DSF or CD files </b>"),
                    span(shiny::icon("info-circle"), id = "info_uu1-1"),
                    fileInput("dsf_input_files", NULL,
                    accept   = c(".xlsx",".zip",".xls",".csv",".txt",'.json','.supr'),
