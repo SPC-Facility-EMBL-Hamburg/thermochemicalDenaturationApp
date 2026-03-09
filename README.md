@@ -1,6 +1,6 @@
 # The Chemelt app
 
-Last time updated: January 2026
+Last time updated: March 2026
 
 ## Introduction
 
