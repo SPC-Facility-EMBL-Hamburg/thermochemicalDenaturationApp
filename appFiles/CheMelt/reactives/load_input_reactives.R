@@ -163,10 +163,10 @@ observeEvent(list(input$table1,input$table2,input$table3,input$table4), {
     write_logbook(logbook_txt,include_time = FALSE)
 
     pySample$select_conditions(include_and_conc_vectors$include_vector,normalise_to_global_max=input$rescale)
-    
+
     logbook_txt <- paste0("Selecting conditions: ",paste(which(include_and_conc_vectors$include_vector), collapse = ", "))
     write_logbook(logbook_txt,include_time = FALSE)
-    
+
     pySample$estimate_derivative()
     pySample$guess_Tm()
 
