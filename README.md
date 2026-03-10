@@ -1,12 +1,12 @@
-# The Chemelt app
+# The CheMelt app
 
 Last time updated: March 2026
 
 ## Introduction
 
-Chemelt is an online tool to globally fit (chemical and thermal denaturation) unfolding data of protein monomers. 
+CheMelt is an online tool to globally fit (chemical and thermal denaturation) unfolding data of protein monomers. 
 
-The workflow of Chemelt is divided into four steps:
+The workflow of CheMelt is divided into four steps:
 
 1) Data Importing: Upload raw DSF data 
 
@@ -42,16 +42,16 @@ python3 -m venv /home/${user}/myenv
 
 4) Set the correct path (variable 'base_dir') for the app by modifying the global.R file
 
-5) Run Chemelt
+5) Run CheMelt
 
 ``` R 
-cd appFiles/Chemelt
+cd appFiles/CheMelt
 R -e 'shiny::runApp()'
 ```
 
 ## Acknowledgments
 
-The Chemelt app is possible thanks to:
+The CheMelt app is possible thanks to:
 
 R language: R Core Team (2020). R: A language and environment for statistical computing. R Foundation for Statistical Computing, Vienna, Austria. URL https://www.R-project.org/.
 
