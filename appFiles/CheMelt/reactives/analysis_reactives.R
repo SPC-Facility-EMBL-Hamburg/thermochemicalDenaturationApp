@@ -259,6 +259,20 @@ observeEvent(input$btn_call_fit,{
         reactives$fitting_done <- TRUE
         popUpSuccess('✅ Fitting completed!')
 
+        pySample$create_fit_report()
+        report_string <- pySample$fit_report
+        report_string <- highlight_cp_line(report_string)
+
+        output$fitReport <- renderUI({
+            HTML(
+                paste0(
+                "<pre style='font-size:13px;'>",
+                report_string,
+                "</pre>"
+                )
+            )
+        })
+
         write_logbook("Fitting completed successfully.")
 
     })
