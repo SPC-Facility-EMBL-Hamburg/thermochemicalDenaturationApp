@@ -9,6 +9,8 @@ observeEvent(input$btn_call_fit,{
     req(input$table1)
     req(reactives$signal_df)
 
+    reactives$fitting_done <- FALSE
+
     write_logbook( "Fitting process started")
 
     write_logbook(paste0("Baseline window (native): ",input$baseline_window_native))
@@ -254,9 +256,42 @@ observeEvent(input$btn_call_fit,{
        dg_df <- pandas_to_r(dg_df)
        reactives$dg_df <- dg_df
 
+        reactives$fitting_done <- TRUE
         popUpSuccess('✅ Fitting completed!')
 
         write_logbook("Fitting completed successfully.")
+
+    })
+
+})
+
+observeEvent(input$btn_cal_conf_interval,{
+
+    withBusyIndicatorServer("Go2",{
+
+        popUpInfo('Calculating asymmetric confidence intervals. 
+        Please wait some minutes...')
+
+        write_logbook("Calculating asymmetric confidence intervals.")
+        pySample$calculate_confidence_intervals()
+
+        conf_int_df <- pySample$ci_df
+        conf_int_df <- pandas_to_r(conf_int_df)
+
+        reactives$conf_interval_calculated <- TRUE
+
+        # append a tab panel with the confidence intervals table
+        tab_panel_to_add <- tabPanel(
+            "Confidence intervals",
+            withSpinner(tableOutput("conf_int_table"))
+        )
+
+        appendTab('tabset_fit',tab_panel_to_add)
+        output$conf_int_table <- renderTable({
+            conf_int_df
+        })
+        
+        popUpSuccess('✅ Confidence intervals calculated successfully!')
 
     })
 

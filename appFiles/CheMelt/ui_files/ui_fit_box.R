@@ -160,7 +160,29 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
                 tooltip = "Fit the data using at most this number of points per curve (evenly spaced).",
                 placement = "right")
             ))
+        ),
+
+        # Panel to allow computing asymmetric confidence intervals
+        conditionalPanel(
+            'output.fitting_done',
+                        # button to run the fit
+            column(2, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
+                actionButton(
+                inputId = "btn_cal_conf_interval",
+                label = "Calculate CI95",
+                icon("flag"),
+                style="color: #fff; background-color: #337ab7;
+                border-color: #2e6da4"))
+            ),
+
+            # Little hack to use the withBusyIndicatorUI function (loading spinner)
+            column(1, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
+                withBusyIndicatorUI(
+                shinyjs::hidden(actionButton("Go2","",class = "btn-primary"))))
+            )
+
         )
+
     )
 
 )
