@@ -18,9 +18,18 @@ box(title = "Input", width = 3, solidHeader = T, status = "primary",
         shinyjs::hidden(actionButton("Go","2. Load data!",class = "btn-primary")))),
       # End of Little hack to use the withBusyIndicatorUI function (loading spinner)
 
-      column(4, p(HTML("<b>Signal</b>"),
-                  selectInput("which", NULL,
-                              c("Ratio"="Ratio","350nm" = "350nm","330nm" = "330nm","Scattering"="Scattering")))),
+      column(6, p(HTML("<b>Signal(s)</b>"),
+                  selectInput(
+                    inputId = "which",
+                    label = NULL,
+                    selected = NULL,
+                    choices = c(
+                      "Ratio"="Ratio",
+                      "350nm" = "350nm",
+                      "330nm" = "330nm",
+                      "Scattering"="Scattering"),
+                    multiple=TRUE,
+                    selectize=TRUE))),
 
       # Checkbox input to rescale between 0 and 100
       column(

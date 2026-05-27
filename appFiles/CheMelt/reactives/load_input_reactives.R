@@ -36,10 +36,10 @@ observeEvent(input$dsf_input_files, {
 
         logbook_txt <- paste0("Files imported: ",paste(input$dsf_input_files$name, collapse = ", "))
 
-        write_logbook(logbook_txt,include_time = TRUE)
+        write_logbook(logbook_txt, include_time = TRUE)
 
-        updateSelectInput(session, "which",choices  = pySample$signals)
-
+        updateSelectInput(session, "which", choices  = pySample$signals,selected = pySample$signals[1])
+        
         pySample$set_signal(pySample$signals[1])
 
         # Find max and min temperature
@@ -86,7 +86,9 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
 
     req(reactives$update_plots)
     req(input$table1)
+    req(input$which)
     reactives$update_plots <- NULL
+
     pySample$set_signal(input$which)
 
     logbook_txt <- paste0("Signal set to: ",input$which)
