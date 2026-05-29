@@ -101,7 +101,6 @@ plot_fluo_signal <- function(
     show_colorbar=TRUE,
     show_grid_x=FALSE,
     show_grid_y=FALSE,
-    y_axis_label='Signal',
     marker_size = 2,
     line_width = 2,
     max_points = 2000,
@@ -111,7 +110,7 @@ plot_fluo_signal <- function(
     tick_width = 2,
     derivative = FALSE){
 
-    # Select at most 20 temperatures
+    # Select at most max_points
     n_rows <- nrow(signal_df)
 
     extra_hover_text <- ' (M)'
@@ -142,7 +141,8 @@ plot_fluo_signal <- function(
 
     xticks_pos <- nice_temperature_ticks_05(min_x + 5, max_x - 5, n_ticks = n_xticks)
 
-    xaxis <- list(title = x_axis_label,
+    # Common x-axis configuration
+    xaxis_config <- list(
         titlefont = list(size = axis_size),
         tickfont = list(size = axis_size),
         range = c(min_x, max_x),
@@ -159,133 +159,191 @@ plot_fluo_signal <- function(
     expand_y_pos    <- 1 + expand_y_factor
     expand_y_neg    <- 1 - expand_y_factor
 
-    min_s <- min(signal_df$Signal)
-    max_s <- max(signal_df$Signal)
-
-    min_s <- ifelse(min_s > 0, min_s*expand_y_neg, min_s*expand_y_pos)
-    max_s <- ifelse(max_s > 0, max_s*expand_y_pos, max_s*expand_y_neg)
-
-    yticks_pos <- get_axis_ticks(min_s, max_s, n_ticks = n_yticks)
-
-    if (derivative) y_axis_label <- paste0("1st derivative / ",y_axis_label)
-
-    yaxis <- list(title= y_axis_label,
-        titlefont = list(size = axis_size),
-        tickfont = list(size = axis_size),
-        range = c(min_s, max_s),
-        showgrid = show_grid_y,
-        showline = TRUE,
-        zeroline = FALSE,
-        ticks = "outside",
-        tickwidth = tick_width,
-        ticklen = tick_length,
-        tickmode = "array",
-        tickvals = yticks_pos,
-        ticktext = format_axis_labels(yticks_pos, sig = 3)
-    )
-
-    fig <- plot_ly()
-
-    # Use markers for signal, lines for derivative
-    if (!derivative) {
-
-        # Plot the fitting as black lines if unfolding_fitted_data is provided
-        if (!is.null(unfolding_fitted_data)) {
-
-            groups <- unique(signal_df$ID)
-
-            # Plot one trace per group, to avoid problems with the lines ...
-            for (i in 1:length(groups)) {
-
-                group    <- groups[i]
-
-                group_df <- unfolding_fitted_data[unfolding_fitted_data$ID == group, ]
-
-                group_df <- group_df[order(group_df$Temperature), ]
-
-                fig <- fig %>% add_trace(
+    # Create subplots - one per label
+    unique_labels <- unique(signal_df$Label)
+    n_labels <- length(unique_labels)
+    
+    # Create a list to store individual plots
+    plot_list <- list()
+    
+    # Global min/max for denaturant to ensure consistent colorbar
+    min_z <- min(signal_df$Denaturant)
+    max_z <- max(signal_df$Denaturant)
+    need_color_bar <- min_z != max_z
+    
+    # Global min/max for signal (used for invisible trace positioning)
+    global_min_s <- min(signal_df$Signal)
+    global_max_s <- max(signal_df$Signal)
+    
+    for (i in 1:n_labels) {
+        current_label <- unique_labels[i]
+        label_data <- signal_df[signal_df$Label == current_label, ]
+        
+        # Create a plot for this label
+        p <- plot_ly()
+        
+        # Use markers for signal, lines for derivative
+        if (!derivative) {
+            # Plot the fitting as black lines if unfolding_fitted_data is provided
+            if (!is.null(unfolding_fitted_data)) {
+                label_fitted <- unfolding_fitted_data[unfolding_fitted_data$Label == current_label, ]
+                groups <- unique(label_data$ID)
+                
+                for (j in 1:length(groups)) {
+                    group <- groups[j]
+                    group_df <- label_fitted[label_fitted$ID == group, ]
+                    group_df <- group_df[order(group_df$Temperature), ]
+                    
+                    p <- p %>% add_trace(
+                        data = group_df,
+                        x = ~Temperature,
+                        y = ~Signal,
+                        color = I('black'),
+                        type = "scatter",
+                        mode = "lines",
+                        showlegend = FALSE,
+                        line = list(width = line_width))
+                }
+            }
+            
+            # Add the data points with explicit colors
+            # Group by ID and add one trace per group to ensure proper coloring
+            groups <- unique(label_data$ID)
+            for (j in 1:length(groups)) {
+                group <- groups[j]
+                group_df <- label_data[label_data$ID == group, ]
+                
+                # Get the color for this denaturant concentration
+                denaturant_val <- unique(group_df$Denaturant)[1]
+                hex_color <- get_colors_from_numeric_values(denaturant_val, min_z, max_z, useLogScale = FALSE)
+                
+                p <- p %>% add_trace(
                     data = group_df,
                     x = ~Temperature,
                     y = ~Signal,
-                    color = I('black'),
+                    type = "scatter",
+                    mode = "markers",
+                    color = I(hex_color),
+                    showlegend = FALSE,
+                    text = ~paste0(Denaturant, extra_hover_text),
+                    name = "",
+                    hoverinfo = 'text+x+y',
+                    marker = list(size = marker_size))
+            }
+            
+        } else {
+            # Derivative mode - plot lines
+            groups <- unique(label_data$ID)
+            
+            for (j in 1:length(groups)) {
+                group <- groups[j]
+                group_df <- label_data[label_data$ID == group, ]
+                
+                # Get the color for this denaturant concentration
+                denaturant_val <- unique(group_df$Denaturant)[1]
+                hex_color <- get_colors_from_numeric_values(denaturant_val, min_z, max_z, useLogScale = FALSE)
+                
+                p <- p %>% add_trace(
+                    data = group_df,
+                    x = ~Temperature,
+                    y = ~Signal,
                     type = "scatter",
                     mode = "lines",
                     showlegend = FALSE,
-                    line=list(width=line_width))
+                    text = ~paste0(Denaturant, extra_hover_text),
+                    name = "",
+                    hoverinfo = 'text+x+y',
+                    line = list(width = line_width, color = hex_color))
             }
-
         }
-
-        fig <- fig %>% add_trace(
-            data=signal_df,
-            x = ~Temperature,
-            y = ~Signal,
-            color = ~Denaturant,
-            type = "scatter",
-            mode = "markers",
-            showlegend = FALSE,
-            text = ~paste0(Denaturant, extra_hover_text),
-            name="",
-            hoverinfo = 'text+x+y',
-            marker=list(size=marker_size))
-
-    } else {
-
-        # We need to plot one group at a time, to avoid problems with the lines
-
-        groups <- unique(signal_df$ID)
-
-        for (i in 1:length(groups)) {
-            group    <- groups[i]
-
-            group_df <- signal_df[signal_df$ID == group, ]
-            fig <- fig %>% add_trace(
-                data = group_df,
-                x = ~Temperature,
-                y = ~Signal,
-                color = ~Denaturant,
-                type = "scatter",
-                mode = "lines",
-                showlegend = FALSE,
-                text = ~paste0(Denaturant, extra_hover_text),
-                name="",
-                hoverinfo = 'text+x+y',
-                line=list(width=line_width))
+        
+        # Add invisible trace for colorbar only on the first subplot
+        if (i == 1 && need_color_bar) {
+            df <- data.frame(x = min_x, y = global_min_s, values = c(min_z, max_z))
+            p <- p %>% add_trace(
+                data = df,
+                x = ~x,
+                y = ~y,
+                type = 'scatter',
+                mode = 'markers',
+                color = ~values,
+                marker = list(size = 0.001),
+                showlegend = FALSE)
         }
-
+        
+        # Set y-axis title for this subplot using the Label value
+        p <- p %>% layout(yaxis = list(title = current_label))
+        
+        plot_list[[i]] <- p
     }
-
-    fig <- fig %>% layout(
-        xaxis = xaxis,
-        yaxis = yaxis,
-        font="Roboto"
-    )
-
-    min_z <- min(signal_df$Denaturant)
-    max_z <- max(signal_df$Denaturant)
-
-    tickvals <- c(min_z,min_z + (max_z - min_z)/2,max_z)
-
-    tickvals[2] <- round(tickvals[2],2)
-
-     # Set layout and position the colorbar (conditionally show/hide)
-    if (show_colorbar) {
+    
+    # Combine plots using subplot
+    fig <- subplot(plot_list, nrows = n_labels, shareX = TRUE, titleY = TRUE, margin = 0.05)
+    
+    # Update layout for all subplots
+    layout_updates <- list(font = "Roboto")
+    
+    # Set axis titles for all subplots
+    for (i in 1:n_labels) {
+        current_label <- unique_labels[i]
+        label_data <- signal_df[signal_df$Label == current_label, ]
+        
+        # Calculate y-axis range for this specific subplot
+        min_s_label <- min(label_data$Signal)
+        max_s_label <- max(label_data$Signal)
+        min_s_label <- ifelse(min_s_label > 0, min_s_label*expand_y_neg, min_s_label*expand_y_pos)
+        max_s_label <- ifelse(max_s_label > 0, max_s_label*expand_y_pos, max_s_label*expand_y_neg)
+        yticks_pos_label <- get_axis_ticks(min_s_label, max_s_label, n_ticks = n_yticks)
+        
+        # Create y-axis configuration for this subplot
+        yaxis_config_label <- list(
+            titlefont = list(size = axis_size),
+            tickfont = list(size = axis_size),
+            range = c(min_s_label, max_s_label),
+            showgrid = show_grid_y,
+            showline = TRUE,
+            zeroline = FALSE,
+            ticks = "outside",
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = "array",
+            tickvals = yticks_pos_label,
+            ticktext = format_axis_labels(yticks_pos_label, sig = 3)
+        )
+        
+        # X-axis configuration
+        x_axis_name <- if (i == 1) "xaxis" else paste0("xaxis", i)
+        layout_updates[[x_axis_name]] <- c(xaxis_config, list(title = x_axis_label))
+        
+        # Y-axis configuration - use the actual Label value as title
+        y_axis_name <- if (i == 1) "yaxis" else paste0("yaxis", i)
+        layout_updates[[y_axis_name]] <- c(yaxis_config_label, list(title = current_label))
+    }
+    
+    fig <- fig %>% layout(layout_updates)
+    
+    # Configure the colorbar if needed
+    if (show_colorbar && need_color_bar) {
+        tickvals <- c(min_z, min_z + (max_z - min_z)/2, max_z)
+        ticktext <- c(min_z, round(min_z + (max_z - min_z)/2, 2), max_z)
+        
         fig <- fig %>% colorbar(
             title = list(
-                text="[Denaturant] (M)",
-                font=list(size=axis_size-1)
-                ),
-            x = x_legend_pos,   # Horizontal position
-            y = y_legend_pos,   # Vertical position
-            xanchor = "right",  # Anchoring to the right side
+                text = "[Denaturant] (M)",
+                font = list(size = axis_size - 1)
+            ),
+            x = x_legend_pos,
+            y = y_legend_pos,
+            xanchor = "right",
             yanchor = "top",
-            tickvals = tickvals,  # Ticks from max to min, rounded to two decimal places
-            ticktext = tickvals,  # Use the same tick values as labels
-            tickfont = list(size = axis_size-2),  # Font size of the ticks
-            len = color_bar_length,  # Length of the color bar
+            tickvals = tickvals,
+            ticktext = ticktext,
+            tickfont = list(size = axis_size - 2),
+            len = color_bar_length,
             orientation = color_bar_orientation,
             outlinewidth = 0)
-    } else {
+    } else if (need_color_bar) {
+        # Hide colorbar if show_colorbar is FALSE but we still added the invisible trace
         fig <- fig %>% hide_colorbar()
     }
 
@@ -487,57 +545,181 @@ plot_2d <- function(
     tick_width = 2,
     x_label="Denaturant (M)",
     y_label="T<sub>m</sub> (ºC) / 1st derivative",
+    y_labels=NULL,                    # optional vector of y-axis labels for subplots
     filename="Tm_versus_denaturant",
     y_zeroline = FALSE,               # whether to enable y-axis zeroline
     y_zeroline_color = "red",
     y_zeroline_width = 2){
 
-    # The first column is the y-value
-    # The second column is the x-value
-
-    # Plot the Tm versus denaturant
-    fig <- plot_ly(x = df[,2], y = df[,1],
-        type = "scatter", mode = "markers", showlegend = FALSE,
-        marker=list(size=marker_size))
-
-
-
-    # Set the axis labels
-    xaxis <- list(title = x_label,
-        titlefont = list(size = axis_size),
-        tickfont = list(size = axis_size),
-        showgrid = show_grid_x,
-        showline = TRUE,
-        zeroline = FALSE,
-        ticks = "outside",
-        tickwidth = tick_width,
-        ticklen = tick_length,
-        tickmode = "array",
-        tickvals = get_axis_ticks(min(df[,2]), max(df[,2]), n_ticks = n_xticks),
-        ticktext = format_axis_labels(get_axis_ticks(min(df[,2]), max(df[,2]), n_ticks = n_xticks), sig = 3)
+    # Check if df is a list of dataframes
+    is_list <- is.list(df) && !is.data.frame(df)
+    
+    if (is_list) {
+        # Multiple dataframes - create subplots
+        n_plots <- length(df)
+        plot_list <- list()
+        
+        # Get names for y-axis titles
+        # Priority: 1) y_labels argument, 2) list names, 3) column name of first column, 4) y_label parameter
+        if (!is.null(y_labels)) {
+            plot_names <- y_labels
+        } else {
+            plot_names <- names(df)
+            if (is.null(plot_names) || all(plot_names == "")) {
+                # Try to use column names from the dataframes
+                plot_names <- sapply(1:n_plots, function(i) {
+                    col_name <- colnames(df[[i]])[1]
+                    if (!is.null(col_name) && col_name != "") {
+                        return(col_name)
+                    } else {
+                        # Fall back to y_label with index
+                        return(paste0(y_label, " ", i))
+                    }
+                })
+            }
+        }
+        
+        # Common x-axis configuration
+        xaxis_config <- list(
+            titlefont = list(size = axis_size),
+            tickfont = list(size = axis_size),
+            showgrid = show_grid_x,
+            showline = TRUE,
+            zeroline = FALSE,
+            ticks = "outside",
+            tickwidth = tick_width,
+            ticklen = tick_length
         )
+        
+        expand_y_factor <- 0.1
+        expand_y_pos <- 1 + expand_y_factor
+        expand_y_neg <- 1 - expand_y_factor
+        
+        for (i in 1:n_plots) {
+            current_df <- df[[i]]
+            current_name <- plot_names[i]
+            
+            # Create individual plot
+            p <- plot_ly(
+                x = current_df[,2], 
+                y = current_df[,1],
+                type = "scatter", 
+                mode = "markers", 
+                showlegend = FALSE,
+                marker = list(size = marker_size)
+            )
+            
+            # Set y-axis title for this subplot
+            p <- p %>% layout(yaxis = list(title = current_name))
+            
+            plot_list[[i]] <- p
+        }
+        
+        # Combine plots using subplot
+        fig <- subplot(plot_list, nrows = n_plots, shareX = TRUE, titleY = TRUE, margin = 0.05)
+        
+        # Update layout for all subplots
+        layout_updates <- list(font = "Roboto")
+        
+        # Calculate global x-range from all dataframes
+        all_x <- unlist(lapply(df, function(d) d[,2]))
+        min_x <- min(all_x)
+        max_x <- max(all_x)
+        xticks_pos <- get_axis_ticks(min_x, max_x, n_ticks = n_xticks)
+        
+        # Set axis configuration for all subplots
+        for (i in 1:n_plots) {
+            current_df <- df[[i]]
+            current_name <- plot_names[i]
+            
+            # Calculate y-axis range for this specific subplot
+            min_y <- min(current_df[,1])
+            max_y <- max(current_df[,1])
+            min_y <- ifelse(min_y > 0, min_y * expand_y_neg, min_y * expand_y_pos)
+            max_y <- ifelse(max_y > 0, max_y * expand_y_pos, max_y * expand_y_neg)
+            yticks_pos <- get_axis_ticks(min_y, max_y, n_ticks = n_yticks)
+            
+            # Create y-axis configuration for this subplot
+            yaxis_config <- list(
+                titlefont = list(size = axis_size),
+                tickfont = list(size = axis_size),
+                range = c(min_y, max_y),
+                showgrid = show_grid_y,
+                showline = TRUE,
+                zeroline = isTRUE(y_zeroline),
+                zerolinecolor = y_zeroline_color,
+                zerolinewidth = y_zeroline_width,
+                ticks = "outside",
+                tickwidth = tick_width,
+                ticklen = tick_length,
+                tickmode = "array",
+                tickvals = yticks_pos,
+                ticktext = format_axis_labels(yticks_pos, sig = 3)
+            )
+            
+            # X-axis configuration
+            x_axis_name <- if (i == 1) "xaxis" else paste0("xaxis", i)
+            layout_updates[[x_axis_name]] <- c(xaxis_config, list(
+                title = x_label,
+                tickmode = "array",
+                tickvals = xticks_pos,
+                ticktext = format_axis_labels(xticks_pos, sig = 3)
+            ))
+            
+            # Y-axis configuration
+            y_axis_name <- if (i == 1) "yaxis" else paste0("yaxis", i)
+            layout_updates[[y_axis_name]] <- c(yaxis_config, list(title = current_name))
+        }
+        
+        fig <- fig %>% layout(layout_updates)
+        
+    } else {
+        # Single dataframe - original behavior
+        # The first column is the y-value
+        # The second column is the x-value
 
-    # Use the y_zeroline parameters to populate the yaxis zeroline properties
-    yaxis <- list(title = y_label,
-        titlefont = list(size = axis_size),
-        tickfont = list(size = axis_size),
-        showgrid = show_grid_y,
-        showline = TRUE,
-        zeroline = isTRUE(y_zeroline),
-        zerolinecolor = y_zeroline_color,
-        zerolinewidth = y_zeroline_width,
-        ticks = "outside",
-        tickwidth = tick_width,
-        ticklen = tick_length,
-        tickmode = "array",
-        tickvals = get_axis_ticks(min(df[,1]), max(df[,1]), n_ticks = n_yticks),
-        ticktext = format_axis_labels(get_axis_ticks(min(df[,1]), max(df[,1]), n_ticks = n_yticks), sig = 3)
-        )
+        # Plot the Tm versus denaturant
+        fig <- plot_ly(x = df[,2], y = df[,1],
+            type = "scatter", mode = "markers", showlegend = FALSE,
+            marker=list(size=marker_size))
 
-    fig <- fig %>% layout(
-        xaxis = xaxis,
-        yaxis = yaxis,
-        font="Roboto")
+        # Set the axis labels
+        xaxis <- list(title = x_label,
+            titlefont = list(size = axis_size),
+            tickfont = list(size = axis_size),
+            showgrid = show_grid_x,
+            showline = TRUE,
+            zeroline = FALSE,
+            ticks = "outside",
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = "array",
+            tickvals = get_axis_ticks(min(df[,2]), max(df[,2]), n_ticks = n_xticks),
+            ticktext = format_axis_labels(get_axis_ticks(min(df[,2]), max(df[,2]), n_ticks = n_xticks), sig = 3)
+            )
+
+        # Use the y_zeroline parameters to populate the yaxis zeroline properties
+        yaxis <- list(title = y_label,
+            titlefont = list(size = axis_size),
+            tickfont = list(size = axis_size),
+            showgrid = show_grid_y,
+            showline = TRUE,
+            zeroline = isTRUE(y_zeroline),
+            zerolinecolor = y_zeroline_color,
+            zerolinewidth = y_zeroline_width,
+            ticks = "outside",
+            tickwidth = tick_width,
+            ticklen = tick_length,
+            tickmode = "array",
+            tickvals = get_axis_ticks(min(df[,1]), max(df[,1]), n_ticks = n_yticks),
+            ticktext = format_axis_labels(get_axis_ticks(min(df[,1]), max(df[,1]), n_ticks = n_yticks), sig = 3)
+            )
+
+        fig <- fig %>% layout(
+            xaxis = xaxis,
+            yaxis = yaxis,
+            font="Roboto")
+    }
 
     fig <- config_fig(
         fig,
@@ -567,29 +749,64 @@ plot_initial_signal_versus_denaturant <- function(
     # For each group in signal_df, get the first signal value
     # and the corresponding denaturant value
     initial_signal_df <- signal_df %>%
-        group_by(ID) %>%
+        group_by(ID, Label) %>%
         summarise(
             Initial_Signal = first(Signal),
-            Denaturant     = first(Denaturant))
+            Denaturant     = first(Denaturant),
+            .groups = 'drop')
 
-    initial_signal_df <- as.data.frame(initial_signal_df)[,c(2,3)]
-
-    fig <- plot_2d(
-        df = initial_signal_df,
-        plot_width = plot_width,
-        plot_height = plot_height,
-        plot_type = plot_type,
-        axis_size = axis_size,
-        show_grid_x = show_grid_x,
-        show_grid_y = show_grid_y,
-        marker_size = marker_size,
-        n_xticks = n_xticks,
-        n_yticks = n_yticks,
-        tick_length = tick_length,
-        tick_width = tick_width,
-        x_label = "Denaturant (M)",
-        y_label = "Initial signal (a.u.)",
-        filename = "Initial_signal_versus_denaturant")
+    # Check if there are multiple labels
+    unique_labels <- unique(initial_signal_df$Label)
+    
+    if (length(unique_labels) > 1) {
+        # Multiple labels - create list of dataframes for subplots
+        df_list <- lapply(unique_labels, function(label) {
+            label_data <- initial_signal_df[initial_signal_df$Label == label, ]
+            # Return dataframe with Initial_Signal as first column (y), Denaturant as second (x)
+            as.data.frame(label_data)[,c("Initial_Signal", "Denaturant")]
+        })
+        
+        # Create y-labels combining base text with Label values
+        y_labels <- paste0("Initial signal (a.u.) - ", unique_labels)
+        
+        fig <- plot_2d(
+            df = df_list,
+            y_labels = y_labels,
+            plot_width = plot_width,
+            plot_height = plot_height,
+            plot_type = plot_type,
+            axis_size = axis_size,
+            show_grid_x = show_grid_x,
+            show_grid_y = show_grid_y,
+            marker_size = marker_size,
+            n_xticks = n_xticks,
+            n_yticks = n_yticks,
+            tick_length = tick_length,
+            tick_width = tick_width,
+            x_label = "Denaturant (M)",
+            y_label = "Initial signal (a.u.)",
+            filename = "Initial_signal_versus_denaturant")
+    } else {
+        # Single label - use original single plot approach
+        initial_signal_df <- as.data.frame(initial_signal_df)[,c("Initial_Signal", "Denaturant")]
+        
+        fig <- plot_2d(
+            df = initial_signal_df,
+            plot_width = plot_width,
+            plot_height = plot_height,
+            plot_type = plot_type,
+            axis_size = axis_size,
+            show_grid_x = show_grid_x,
+            show_grid_y = show_grid_y,
+            marker_size = marker_size,
+            n_xticks = n_xticks,
+            n_yticks = n_yticks,
+            tick_length = tick_length,
+            tick_width = tick_width,
+            x_label = "Denaturant (M)",
+            y_label = "Initial signal (a.u.)",
+            filename = "Initial_signal_versus_denaturant")
+    }
 
     return(fig)
 
