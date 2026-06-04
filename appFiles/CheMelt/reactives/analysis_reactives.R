@@ -4,23 +4,31 @@ observeEvent(input$n_residues,{
 
 })
 
+
 observeEvent(input$btn_call_fit,{
 
     req(input$table1)
     req(reactives$signal_df)
 
+    unfolding_model <- input$unfolding_model
+
+    fixed_cp <- input$fix_cp_option == 'fix_cp'
+
     reactives$fitting_done <- FALSE
 
     write_logbook( "Fitting process started")
 
-    write_logbook(paste0("Baseline window (native): ",input$baseline_window_native))
-    write_logbook(paste0("Baseline window (unfolded): ",input$baseline_window_unfolded))
-
     native_baseline_type <- input$native_dependence
     unfolded_baseline_type <- input$unfolded_dependence
 
-    write_logbook(paste0("Native baseline dependence set to: ",native_baseline_type))
-    write_logbook(paste0("Unfolded baseline dependence set to: ",unfolded_baseline_type))
+    write_logbook(paste0("Baseline window (native): ",input$baseline_window_native))
+    write_logbook(paste0("Baseline window (unfolded): ",input$baseline_window_unfolded))
+
+    # print baseline type if the compare options is not selected
+    if (unfolding_model != "compare-many-models") {
+        write_logbook(paste0("Native baseline dependence set to: ",native_baseline_type))
+        write_logbook(paste0("Unfolded baseline dependence set to: ",unfolded_baseline_type))
+    }
 
     write_logbook(paste0("Number of residues set to: ",input$n_residues))
 
@@ -44,8 +52,9 @@ observeEvent(input$btn_call_fit,{
 
     pySample$reset_fittings_results()
 
+    c1 <- unfolding_model == "global-global-global"
     # Return an error if the user selected the global global global model but wants to use the Ratio signal
-    if (input$unfolding_model == "global-global-global" & "Ratio" %in% pySample$signal_names) {
+    if (c1 & "Ratio" %in% pySample$signal_names) {
         popUpWarning(
             "⚠ Error: The 'global-global-global' model cannot be used with the 'Ratio' signal type.
             Please select a different signal."
@@ -72,11 +81,19 @@ observeEvent(input$btn_call_fit,{
             reactives$scaled_tab_shown <- FALSE
         }
 
-        popUpInfo(
-          'Fitting started.
-          The plot below will be updated when the fitting is finished.
-          Please wait some minutes...'
-        )
+        # if tab panel for confidence intervals is present delete it first
+        if (reactives$conf_interval_calculated) {
+            removeTab('tabset_fit',target = "Confidence intervals")
+            reactives$conf_interval_calculated <- FALSE
+        }
+
+        # Select the popup message based on the model selected
+        if (unfolding_model != "compare-many-models") {
+            pop_msg <- 'Fitting started. The plot below will be updated when the fitting is finished. Please wait some minutes...'
+            popUpInfo(pop_msg)
+            write_logbook(paste0("Fitting model selected: ",unfolding_model))
+
+        }
 
         pySample$n_residues <- input$n_residues
 
@@ -86,25 +103,12 @@ observeEvent(input$btn_call_fit,{
               pySample$guess_initial_parameters(
               native_baseline_type     = 'linear',
               unfolded_baseline_type   = 'linear',
-              window_range_native = input$baseline_window_native,
-              window_range_unfolded = input$baseline_window_unfolded
+              window_range_native      = input$baseline_window_native,
+              window_range_unfolded    = input$baseline_window_unfolded
               )
-
-            if (input$unfolding_model != "global-local-local") {
-                popUpInfo('The search for the initial parameters is finished. Please wait some minutes...')
-            }
 
             reactives$find_initial_params <- FALSE
         }
-
-        write_logbook(paste0("Fitting model selected: ",input$unfolding_model))
-
-        pySample$estimate_baseline_parameters(
-            native_baseline_type     = native_baseline_type,
-            unfolded_baseline_type   = unfolded_baseline_type,
-            window_range_native     = input$baseline_window_native,
-            window_range_unfolded   = input$baseline_window_unfolded
-        )
 
         user_cp_limits <- NULL
         user_dh_limits <- NULL
@@ -138,14 +142,55 @@ observeEvent(input$btn_call_fit,{
 
           # If cp value is given, it will be used as fixed parameter
           # The bounds are ignored in this case
-          if (input$fix_cp_option == 'fix_cp') {
+          if (fixed_cp) {
             
-              cp_value <- input$cp_value_fixed
+              cp_value <- input$cp_value
               write_logbook(paste0("Cp fixed to user-defined value: ",cp_value))
 
           }
 
         }
+
+        reactives$user_cp_limits <- user_cp_limits
+        reactives$user_dh_limits <- user_dh_limits
+        reactives$user_tm_limits <- user_tm_limits
+        reactives$cp_value <- cp_value
+
+        # Compare models if the user selected the option to compare models
+        if (unfolding_model == "compare-many-models") {
+
+            # Create a modal dialog to ask for the types of baselines to fit
+            # Three select inout with multiple selection allowed: one for the model and two for the baselines
+            # constant, linear, quadratic, exponential
+            showModal(modalDialog(
+                title = "Model comparison",
+                # small text to explain the user what to do
+                h5("This option will run all possible combinations of local and global parameters
+                with any combination of native and unfolded baselines."),
+                selectInput("native_baselines_to_compare", "Select one or two native baselines to compare:",
+                            choices = c("constant", "linear", "quadratic", "exponential"),
+                            selected = NULL,
+                            multiple = TRUE),
+                selectInput("unfolded_baselines_to_compare", "Select one or two unfolded baselines to compare:",
+                            choices = c("constant", "linear", "quadratic", "exponential"),
+                            selected = NULL,
+                            multiple = TRUE),
+                easyClose = FALSE,
+                footer = tagList(
+                    modalButton("Cancel"),
+                    actionButton("confirm_model_comparison", "Confirm")
+                )
+            ))
+
+            return(NULL)
+        }
+
+        pySample$estimate_baseline_parameters(
+            native_baseline_type    = native_baseline_type,
+            unfolded_baseline_type  = unfolded_baseline_type,
+            window_range_native     = input$baseline_window_native,
+            window_range_unfolded   = input$baseline_window_unfolded
+        )
 
         pySample$fit_thermal_unfolding_global(
             cp_limits = user_cp_limits,
@@ -154,7 +199,10 @@ observeEvent(input$btn_call_fit,{
             cp_value = cp_value
         )
 
-        if (input$unfolding_model %in% c("global-global-local", "global-global-global")) {
+
+        condition <- unfolding_model %in% c("global-global-local", "global-global-global")
+
+        if (condition) {
 
             pySample$set_signal_id()
 
@@ -180,8 +228,8 @@ observeEvent(input$btn_call_fit,{
 
         }
 
-
-        if (input$unfolding_model == "global-global-global") {
+        condition <- unfolding_model == "global-global-global"
+        if (condition) {
             popUpInfo('The fitting with global slopes and local intercepts is finished.
             Now the data will be fitted with global slopes and global intercepts. Please wait...')
 
@@ -201,6 +249,7 @@ observeEvent(input$btn_call_fit,{
                     stop(e) # rethrow non-Python errors
                     }
                 }
+
             )
 
             if (!is.null(result)) return(NULL)
@@ -283,6 +332,12 @@ observeEvent(input$btn_cal_conf_interval,{
 
     withBusyIndicatorServer("Go2",{
 
+        # if tab panel for confidence intervals is present delete it first
+        if (reactives$conf_interval_calculated) {
+            removeTab('tabset_fit',target = "Confidence intervals")
+            reactives$conf_interval_calculated <- FALSE
+        }
+
         popUpInfo('Calculating asymmetric confidence intervals. 
         Please wait some minutes...')
 
@@ -308,5 +363,64 @@ observeEvent(input$btn_cal_conf_interval,{
         popUpSuccess('✅ Confidence intervals calculated successfully!')
 
     })
+
+})
+
+observeEvent(input$confirm_model_comparison,{
+
+    removeModal()
+
+    native_baselines_to_compare <- input$native_baselines_to_compare
+    unfolded_baselines_to_compare <- input$unfolded_baselines_to_compare
+
+    if (is.null(native_baselines_to_compare) || is.null(unfolded_baselines_to_compare)) {
+        popUpWarning("⚠ Please select at least one native baseline and one unfolded baseline to compare.")
+        return(NULL)
+     }
+
+    write_logbook(paste0("User selected the following native baselines to compare: ", paste(native_baselines_to_compare, collapse = ", ")))
+    write_logbook(paste0("User selected the following unfolded baselines to compare: ", paste(unfolded_baselines_to_compare, collapse = ", ")))
+
+    native_baselines_to_compare <- as.list(native_baselines_to_compare)
+    unfolded_baselines_to_compare <- as.list(unfolded_baselines_to_compare)
+
+    # Verify that they have at most 2 options selected for each, otherwise the comparison will take too long and might not be useful
+    if (length(native_baselines_to_compare) > 2 || length(unfolded_baselines_to_compare) > 2) {
+        popUpWarning("⚠ Please select at most two native baselines and two unfolded baselines to compare to avoid an excessively long fitting time.")
+        return(NULL)
+    }
+
+    withBusyIndicatorServer("Go",{
+
+        pySample$compare_models(
+            native_baseline_types = native_baselines_to_compare,
+            unfolded_baseline_types = unfolded_baselines_to_compare,
+            global_model_type='global_global_global',
+            cp_limits = reactives$user_cp_limits,
+            dh_limits = reactives$user_dh_limits,
+            tm_limits = reactives$user_tm_limits,
+            cp_value = reactives$cp_value
+        )
+
+    })
+
+    # Print results
+    model_comparison_df <- pySample$comparison_df
+    model_comparison_df <- pandas_to_r(model_comparison_df)
+
+    output$model_comparison_table <- renderTable({
+        model_comparison_df
+    },digits=1)
+
+    # Show the model comparison results in a modal dialog
+    showModal(modalDialog(
+        title = "Model comparison results",
+        div(style = "overflow-x: auto;",
+            withSpinner(tableOutput("model_comparison_table"))
+        ),
+        easyClose = TRUE,
+        footer = modalButton("Close"),
+        size = "l"
+    ))
 
 })

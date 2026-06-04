@@ -548,7 +548,6 @@ output$fitted_signal_and_residuals <- renderPlotly({
         show_colorbar           = reactives$show_colorbar_val,
         show_grid_x             = reactives$show_grid_x_val,
         show_grid_y             = reactives$show_grid_y_val,
-        y_axis_label            = input$which,
         marker_size             = reactives$plot_marker_size_val,
         line_width              = reactives$plot_line_width_val,
         max_points              = reactives$max_points_val,

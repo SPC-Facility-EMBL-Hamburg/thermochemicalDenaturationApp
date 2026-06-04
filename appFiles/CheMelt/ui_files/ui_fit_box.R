@@ -37,7 +37,8 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
             selectInput("unfolding_model", NULL,choices =
                 c("Local intercepts and slopes" = "global-local-local",
                 "Global slopes and local intercepts" = "global-global-local",
-                "Global slopes and global intercepts" = "global-global-global"
+                "Global slopes and global intercepts" = "global-global-global",
+                "Compare models" = "compare-many-models"
                 ),selectize=FALSE),
             tippy::tippy_this(
             elementId = "info_uu-unfolding_model",
@@ -76,45 +77,50 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
 
     fluidRow(
 
-        column(3,p(
-            HTML("<b>2d. Signal dependence (native)</b>"),
-            span(shiny::icon("info-circle"), id = "info_uu-native_dependence"),
-            selectInput("native_dependence", NULL,choices =
-                c(
-                "constant" = "constant",
-                "linear"   = "linear",
-                "quadratic"= "quadratic",
-                "exponential"= "exponential"
-                ),selectize=FALSE),
-            tippy::tippy_this(
-            elementId = "info_uu-native_dependence",
-            tooltip = "Set to linear if there's a linear dependence
-            between the signal and the temperature for the
-            native state.
-            Set to quadratic if there's a quadratic dependence.",placement = "right"))
-        ),
+        conditionalPanel(
+          condition = "input.unfolding_model != 'compare-many-models'",
 
-        column(3,p(
-            HTML("<b>2e. Signal dependence (unfolded)</b>"),
-            span(shiny::icon("info-circle"), id = "info_uu-unfolded_dependence"),
-            selectInput(
-                "unfolded_dependence",
-                NULL,
-                choices =
-                  c(
-                  "constant" = "constant",
-                  "linear"   = "linear",
-                  "quadratic"= "quadratic",
-                  "exponential" = "exponential"
-                  ),
-                selectize=FALSE
+            column(3,p(
+                HTML("<b>2d. Signal dependence (native)</b>"),
+                span(shiny::icon("info-circle"), id = "info_uu-native_dependence"),
+                selectInput("native_dependence", NULL,choices =
+                    c(
+                    "constant" = "constant",
+                    "linear"   = "linear",
+                    "quadratic"= "quadratic",
+                    "exponential"= "exponential"
+                    ),selectize=FALSE),
+                tippy::tippy_this(
+                elementId = "info_uu-native_dependence",
+                tooltip = "Set to linear if there's a linear dependence
+                between the signal and the temperature for the
+                native state.
+                Set to quadratic if there's a quadratic dependence.",placement = "right"))
             ),
-            tippy::tippy_this(
-            elementId = "info_uu-unfolded_dependence",
-            tooltip = "Set to linear if there's a linear dependence
-            between the signal and the temperature for the
-            unfolded state.
-            Set to quadratic if there's a quadratic dependence.",placement = "right"))
+
+            column(3,p(
+                HTML("<b>2e. Signal dependence (unfolded)</b>"),
+                span(shiny::icon("info-circle"), id = "info_uu-unfolded_dependence"),
+                selectInput(
+                    "unfolded_dependence",
+                    NULL,
+                    choices =
+                    c(
+                    "constant" = "constant",
+                    "linear"   = "linear",
+                    "quadratic"= "quadratic",
+                    "exponential" = "exponential"
+                    ),
+                    selectize=FALSE
+                ),
+                tippy::tippy_this(
+                elementId = "info_uu-unfolded_dependence",
+                tooltip = "Set to linear if there's a linear dependence
+                between the signal and the temperature for the
+                unfolded state.
+                Set to quadratic if there's a quadratic dependence.",placement = "right"))
+            )
+
         ),
 
         # button to run the fit

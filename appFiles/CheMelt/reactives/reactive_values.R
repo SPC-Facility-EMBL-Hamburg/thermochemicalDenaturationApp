@@ -22,6 +22,10 @@ reactives <- reactiveValues(
     dh_upp_bound = 450, # DH upper bound
     cp_low_bound = 0.1, # Cp lower bound
     cp_upp_bound = 6, # Cp upper bound
+    user_cp_limits=NULL, # user-defined Cp limits
+    user_dh_limits=NULL, # user-defined DH limits
+    user_tm_limits=NULL, # user-defined Tm limits
+    cp_value=NULL, # Cp value - if given, used as fixed param
     fitting_done = FALSE, # whether fitting is finished
     conf_interval_calculated = FALSE, # whether confidence interval is calculated
     # Unified plot configuration (used for both regular and fit plots)

@@ -89,7 +89,6 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
     req(input$which)
     reactives$update_plots <- NULL
 
-    print(input$which)
     pySample$set_signal(input$which)
 
     logbook_txt <- paste0("Signal set to: ",input$which)
