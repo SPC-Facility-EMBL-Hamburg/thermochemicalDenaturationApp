@@ -164,9 +164,27 @@ observeEvent(input$btn_call_fit,{
             # constant, linear, quadratic, exponential
             showModal(modalDialog(
                 title = "Model comparison",
-                # small text to explain the user what to do
-                h5("This option will run all possible combinations of local and global parameters
-                with any combination of native and unfolded baselines."),
+                # Small text to explain the user what to do
+
+                # Checkbox input if slopes are shared or not across conditions
+                column(12,
+                # tooltip to explain the user what global slopes means
+                p(
+                    HTML("<b>Compare models with global slopes (recommended)</b>"),
+                    span(shiny::icon("info-circle"), id = "info_compare_global_slopes"),
+                    checkboxInput("compare_global_slopes", label=NULL, value = TRUE),
+
+                    tippy::tippy_this(
+                    elementId = "info_compare_global_slopes",
+                    tooltip = "If enabled, the models with global slopes will be included in the comparison.
+                    The models with global slopes are recommended because they are more robust and provide more accurate thermodynamic parameters. 
+                    However, if the unfolding curves have very different shapes across conditions, the models with global slopes might not fit well and the user might want to compare them with models with local slopes.
+                    As a guide, to analyse datasets obtained under the same experimental conditions (e.g., same protein concentrations, same instrument, same laser power), the models with global slopes should be preferred. 
+                    If the dataset includes unfolding curves obtained under different conditions (e.g., different instruments, different instrument setup), the models with local slopes might fit better.",
+                    placement = "right")
+
+                )),
+
                 selectInput("native_baselines_to_compare", "Select one or two native baselines to compare:",
                             choices = c("constant", "linear", "quadratic", "exponential"),
                             selected = NULL,
@@ -384,10 +402,16 @@ observeEvent(input$confirm_model_comparison,{
     native_baselines_to_compare <- as.list(native_baselines_to_compare)
     unfolded_baselines_to_compare <- as.list(unfolded_baselines_to_compare)
 
-    # Verify that they have at most 2 options selected for each, otherwise the comparison will take too long and might not be useful
-    if (length(native_baselines_to_compare) > 2 || length(unfolded_baselines_to_compare) > 2) {
-        popUpWarning("⚠ Please select at most two native baselines and two unfolded baselines to compare to avoid an excessively long fitting time.")
+    # Verify that they have at most 5 options in total otherwise the comparison will take too long and might not be useful
+    if (length(native_baselines_to_compare) + length(unfolded_baselines_to_compare) > 5) {
+        popUpWarning("⚠ Please select at most five options in total for the native baselines and unfolded baselines to compare to avoid an excessively long fitting time.")
         return(NULL)
+    }
+
+    global_model_types <- if (input$compare_global_slopes) {
+        list("global_global", "global_global_global")
+    } else {
+        list("global")
     }
 
     withBusyIndicatorServer("Go",{
@@ -395,7 +419,7 @@ observeEvent(input$confirm_model_comparison,{
         pySample$compare_models(
             native_baseline_types = native_baselines_to_compare,
             unfolded_baseline_types = unfolded_baselines_to_compare,
-            global_model_type='global_global_global',
+            global_model_types=global_model_types,
             cp_limits = reactives$user_cp_limits,
             dh_limits = reactives$user_dh_limits,
             tm_limits = reactives$user_tm_limits,
@@ -404,13 +428,24 @@ observeEvent(input$confirm_model_comparison,{
 
     })
 
+    # If present remove the model comparison Table before adding the new one
+    if (reactives$comparison_table_shown) {
+        removeTab('tabset_fit',target = "Model comparison")
+        reactives$comparison_table_shown <- FALSE
+    }
+
     # Print results
     model_comparison_df <- pySample$comparison_df
     model_comparison_df <- pandas_to_r(model_comparison_df)
 
+    # We need duplicates, one for the modal and another for the tab
     output$model_comparison_table <- renderTable({
         model_comparison_df
-    },digits=1)
+    },digits=2)
+
+    output$model_comparison_table_2 <- renderTable({
+        model_comparison_df
+    },digits=3)
 
     # Show the model comparison results in a modal dialog
     showModal(modalDialog(
@@ -422,5 +457,91 @@ observeEvent(input$confirm_model_comparison,{
         footer = modalButton("Close"),
         size = "l"
     ))
+
+    # Append also the model comparison tab to the Tabpanel
+    tab_panel_to_add <- tabPanel(
+        "Model comparison",
+        withSpinner(tableOutput("model_comparison_table_2"))
+    )
+
+    appendTab('tabset_fit',tab_panel_to_add)
+
+    reactives$comparison_table_shown <- TRUE
+
+    # Plot and show the stats of the best model according to the EBIC criteria
+    compare_py_fit_objects <- pySample$fit_objects
+    best_py_fit_obj <- pySample$fit_objects[[1]]
+
+    if (input$fit_subset) {
+        signal_df <- best_py_fit_obj$signal_to_df()
+        signal_df <- pandas_to_r(signal_df)
+        reactives$signal_df <- signal_df
+    }
+
+    fitted_df <- best_py_fit_obj$signal_to_df(signal_type = "fitted")
+    fitted_df <- pandas_to_r(fitted_df)
+
+    reactives$signal_df_fitted <- fitted_df
+
+    # Include the fitted parameters into a Table
+    fitted_parameters <- best_py_fit_obj$params_df
+    fitted_parameters <- pandas_to_r(fitted_parameters)
+
+    output$fitted_params <- renderTable({
+        fitted_parameters
+    },digits=4)
+        
+    dg_df <- best_py_fit_obj$dg_df
+    dg_df <- pandas_to_r(dg_df)
+    reactives$dg_df <- dg_df
+
+    reactives$fitting_done <- TRUE
+
+    best_py_fit_obj$create_fit_report()
+    report_string <- best_py_fit_obj$fit_report
+    report_string <- highlight_cp_line(report_string)
+
+    output$fitReport <- renderUI({
+        HTML(
+            paste0(
+            "<pre style='font-size:13px;'>",
+            report_string,
+            "</pre>"
+            )
+        )
+    })
+    
+    # Find if the best model is with a rescale and plot it
+    selected_model <- model_comparison_df[1,3]
+    
+    if (grepl("global intercepts", selected_model)) {
+    
+        tab_panel_to_add <- tabPanel(
+            "Fitted signal (rescaled)",
+            withSpinner(plotlyOutput("fitted_signal_rescaled"))
+        )
+
+        appendTab('tabset_fit',tab_panel_to_add)
+
+        reactives$scaled_tab_shown <- TRUE
+
+        df_scaled <- best_py_fit_obj$signal_to_df(scaled = TRUE)
+        df_scaled <- pandas_to_r(df_scaled)
+
+        reactives$signal_df_scaled <- df_scaled
+
+        fitted_df_scaled <- best_py_fit_obj$signal_to_df(signal_type = "fitted",scaled = TRUE)
+        fitted_df_scaled <- pandas_to_r(fitted_df_scaled)
+
+        reactives$signal_df_fitted_scaled <- fitted_df_scaled
+
+    }
+
+    # End of - Plot and show the stats of the best model according to the EBIC criteria
+
+    # Set pySample to be the best fit object - so the user can compute confidence intervals
+    
+    # Caution - we are changing the global pySample object to be the best fit model
+    pySample <<- best_py_fit_obj   
 
 })

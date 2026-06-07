@@ -25,12 +25,12 @@ file_example <- "./www/nDSFdemoFile.xlsx"
 
 pySample <- pyChemelt$Monomer('test')
 pySample$read_multiple_files(file_example)
-pySample$set_signal(list('350nm','330nm'))
+pySample$set_signal(list('Ratio'))
 
 
 pySample$set_denaturant_concentrations()
-conditions = c(rep(FALSE,24),rep(TRUE,12),rep(FALSE,12))
-pySample$select_conditions(normalise_to_global_max=TRUE)
+conditions = c(rep(TRUE,16),rep(FALSE,8),rep(FALSE,24))
+pySample$select_conditions(normalise_to_global_max=FALSE)
 pySample$estimate_derivative()
 pySample$guess_Tm()
 pySample$reset_fittings_results()
@@ -56,19 +56,9 @@ pySample$estimate_baseline_parameters(
 )
 
 pySample$fit_thermal_unfolding_global()
+pySample$fit_thermal_unfolding_global_global()
+print(pySample$params_df)
 
-library(plotly)
-source('./helpers_R/plot_helpers.R')
+pySample$leave_one_out_cross_validation()
 
-signal_df <- pySample$signal_to_df()
-signal_df <- pandas_to_r(signal_df)
-
-
-fitted_df <- pySample$signal_to_df(signal_type = "fitted")
-fitted_df <- pandas_to_r(fitted_df)
-
-fig <- plot_fits_and_residuals(
-    signal_df = signal_df,
-    unfolding_fitted_data = fitted_df)
-
-fig
+print(pySample$loo_df)

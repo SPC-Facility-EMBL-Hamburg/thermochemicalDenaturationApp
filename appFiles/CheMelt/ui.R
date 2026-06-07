@@ -62,6 +62,7 @@ shinyUI(
                         #fitted_signal_and_residuals{height:650px !important;}
                         ")),
 
+                        source("ui_files/ui_fit_settings_box.R",local = TRUE)$value,
                         source("ui_files/ui_fit_box.R",local = TRUE)$value,
                         source("ui_files/ui_signal_fit_tab_box.R",local = TRUE)$value,
                         source("ui_files/ui_plot_options_box_fit.R",local = TRUE)$value

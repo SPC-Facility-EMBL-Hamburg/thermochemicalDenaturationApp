@@ -1,38 +1,14 @@
-box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
+box(title = "2b. Fitting", width = 6, solidHeader = T, status = "primary",
 
     fluidRow(
-
-        # Temperature window for baseline estimation, slider between 5 and 30, only one value is selected
-        column(2, p(
-            HTML("<b>2a. Window for baseline estimation (ºC) - Native</b>"),
-            span(shiny::icon("info-circle"), id = "info_uu-baseline_window_native"),
-            sliderInput("baseline_window_native", NULL, min = 5, max = 20, value = 10),
-            tippy::tippy_this(
-            elementId = "info_uu-baseline_window_native",
-            tooltip = "Select a temperature range for the initial baseline estimation of the native state.
-            It is used to provide good initial values to the fitting algorithm.",
-            placement = "right"))
-        ),
-
-        # Temperature window for baseline estimation, slider between 5 and 30, only one value is selected
-        column(2, p(
-            HTML("<b>2b. Window for baseline estimation (ºC) - Unfolded</b>"),
-            span(shiny::icon("info-circle"), id = "info_uu-baseline_window_unfolded"),
-            sliderInput("baseline_window_unfolded", NULL, min = 5, max = 20, value = 10),
-            tippy::tippy_this(
-            elementId = "info_uu-baseline_window_unfolded",
-            tooltip = "Select a temperature range for the initial baseline estimation of the unfolded state.
-            It is used to provide good initial values to the fitting algorithm.",
-            placement = "right"))
-        ),
 
         # To select type of fitting, between
         # A) global thermodynamic parameters (but local baselines and slopes)
         # B) global thermodynamic parameters and global slopes (but local baselines)
         # C) with global thermodynamic parameters, global slopes and global baselines 3D fitting
 
-        column(3,p(
-            HTML("<b>2c. Model</b>"),
+        column(6,p(
+            HTML("<b>Model</b>"),
             span(shiny::icon("info-circle"), id = "info_uu-unfolding_model"),
             selectInput("unfolding_model", NULL,choices =
                 c("Local intercepts and slopes" = "global-local-local",
@@ -42,12 +18,14 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
                 ),selectize=FALSE),
             tippy::tippy_this(
             elementId = "info_uu-unfolding_model",
-            tooltip = "If possible, use the model with global slopes.",placement = "right"))
+            tooltip = "If the unfolding curves were obtained under the same experimental conditions,
+            such as protein concentration, instrument type, instrument power, etc., use the models with global slopes.
+            ",placement = "right"))
         ),
 
         conditionalPanel(
           condition = "input.unfolding_model == 'global-global-global'",
-          column(2,p(
+          column(6,p(
                 HTML("<b>Fit scale factor</b>"),
                 span(shiny::icon("info-circle"), id = "info_uu-scale_factor"),
                 checkboxInput("fit_scale_factor", NULL, value = TRUE),
@@ -59,18 +37,6 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
                 If you measure the exact same sample in all positions and the unfolding curves do not overlap,
                 enable the scale factor.",placement = "right")
           ))
-        ),
-
-        # Column to input the number of residues
-        column(2,p(
-            HTML("<b>Number of residues</b>"),
-            span(shiny::icon("info-circle"), id = "info_uu-n_residues"),
-            numericInput("n_residues", NULL, value = 100, min = 1, step = 1),
-            tippy::tippy_this(
-            elementId = "info_uu-n_residues",
-            tooltip = "Input the number of residues in the protein sequence.
-            This is used to provide an initial value for ΔC<sub>p</sub> during fitting.",
-            placement = "right"))
         )
 
     ),
@@ -80,8 +46,8 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
         conditionalPanel(
           condition = "input.unfolding_model != 'compare-many-models'",
 
-            column(3,p(
-                HTML("<b>2d. Signal dependence (native)</b>"),
+            column(6,p(
+                HTML("<b>Native baseline</b>"),
                 span(shiny::icon("info-circle"), id = "info_uu-native_dependence"),
                 selectInput("native_dependence", NULL,choices =
                     c(
@@ -95,11 +61,11 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
                 tooltip = "Set to linear if there's a linear dependence
                 between the signal and the temperature for the
                 native state.
-                Set to quadratic if there's a quadratic dependence.",placement = "right"))
+                Set to exponential (or quadratic) if there's a non-linear dependence.",placement = "right"))
             ),
 
-            column(3,p(
-                HTML("<b>2e. Signal dependence (unfolded)</b>"),
+            column(6,p(
+                HTML("<b>Unfolded baseline</b>"),
                 span(shiny::icon("info-circle"), id = "info_uu-unfolded_dependence"),
                 selectInput(
                     "unfolded_dependence",
@@ -118,13 +84,13 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
                 tooltip = "Set to linear if there's a linear dependence
                 between the signal and the temperature for the
                 unfolded state.
-                Set to quadratic if there's a quadratic dependence.",placement = "right"))
+                Set to exponential (or quadratic) if there's a non-linear dependence.",placement = "right"))
             )
 
         ),
 
         # button to run the fit
-        column(2, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
+        column(6, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
             actionButton(
             inputId = "btn_call_fit",label = "Run Fitting!",
             icon("meteor"),
@@ -133,46 +99,21 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
         ),
 
         # Little hack to use the withBusyIndicatorUI function (loading spinner)
-        column(1, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
+        column(2, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
             withBusyIndicatorUI(
             shinyjs::hidden(actionButton("Go","",class = "btn-primary"))))
-        ),
-
-        # button to run the fit
-        column(2, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
-            actionButton(
-            inputId = "show_advanced_options_fit",label = "Set params bounds",
-            icon("gear")))
-        ),
+        )
 
     ),
 
 
     fluidRow(
 
-        # Checkbox to show advanced options
-        column(2, p(HTML("<b>Fit data subset</b>"),
-            checkboxInput("fit_subset", NULL, value = FALSE)
-        )),
-
-        conditionalPanel(
-            'input.fit_subset',
-            column(2, p(
-                HTML("<b>Max points per curve</b>"),
-                span(shiny::icon("info-circle"), id = "info_uu-max_points_per_curve"),
-                numericInput("max_points_per_curve", NULL, value = 100, step = 10),
-                tippy::tippy_this(
-                elementId = "info_uu-max_points_per_curve",
-                tooltip = "Fit the data using at most this number of points per curve (evenly spaced).",
-                placement = "right")
-            ))
-        ),
-
         # Panel to allow computing asymmetric confidence intervals
         conditionalPanel(
             'output.fitting_done',
                         # button to run the fit
-            column(2, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
+            column(6, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
                 actionButton(
                 inputId = "btn_cal_conf_interval",
                 label = "Calculate CI95",
@@ -182,7 +123,7 @@ box(title = "2. Fitting", width = 12, solidHeader = T, status = "primary",
             ),
 
             # Little hack to use the withBusyIndicatorUI function (loading spinner)
-            column(1, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
+            column(2, p(HTML('<p style="margin-bottom:0px;"><br></p>'),
                 withBusyIndicatorUI(
                 shinyjs::hidden(actionButton("Go2","",class = "btn-primary"))))
             )
