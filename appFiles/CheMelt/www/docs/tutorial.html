@@ -63,7 +63,7 @@
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto1.1_input_empty.png" alt="Base Input tab" width="500" loading="lazy"/>
+<img src="tuto1.1_input_empty.png" alt="Base Input tab" width="300" loading="lazy"/>
 </figure>
 <br>
 
@@ -98,12 +98,10 @@
 <br>
 
 <li class="vf-list__item ">
-As we can see here, the curve with the denaturant concentration of 6.54 M and 2.5 M (uppermost curve) are outliers and are thus excluded from the analysis in the "[Denaturant] (M)" field.
+Here, the curves can be visually inspected to exclude outliers.
 </li>
 
-<figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto1.5_removed_concentration.png" alt="Denaturant field with selected denaturant concentrations and removed concentration of 6.54 M" width="400" loading="lazy"/>
-</figure>
+
 <br>
 
 </ol>
@@ -125,51 +123,53 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
  <ol class="vf-intro__text">
 
 <li class="vf-list__item ">
-    Under the tab "2. Fitting" we can set the settings for the fitting of the formula to the curves.
+    Under the tab "2a. Settings" we can set the settings for the fitting of the formula to the curves.
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto2.1_fitting_settings.png" alt="Fitting Settings" width="1000" loading="lazy"/>
+<img src="tuto2.1_fitting_settings.png" alt="Fitting Settings" width="400" loading="lazy"/>
 </figure>
 <br>
 
 <li class="vf-list__item ">
-    We set the windows for the baselines as 10 degrees Celsius in 2a and 2b each. They control the temperature window sizes at the 
-    beginning and end of the curves which are used for the initial estimation of the baseline functions of the native and unfolded 
-    protein and shouldn't be too narrow.
+   The baseline windows are used to obtain initial estimates. 
+   We set the native baseline to 15 - 25 °C and the unfolded baseline to 85 - 95 °C.
+   The number of residues is used to provide an initial estimate of the ΔC<sub>p</sub> parameter.
+   In this case, it should be set to 86.
+   The max number of points per curve is used to reduce the number of points for a faster fitting. 
+
+</li>
+
+
+<li class="vf-list__item ">
+    The '2b. Fitting' panel controls the amount of parameters and type of fitting. 
+    Briefly, there are three types of models, with local intercepts and local slopes,
+    with local intercepts and global slopes, and with global intercepts and global slopes.
+    The difference between the third and second model is that the third one assumes
+    a linear dependence between the denaturant concentration and the signal, 
+    while the second one does not assume any kind of dependence.
+    If the unfolding curves were obtained under the same experimental conditions, such as protein concentration,
+    instrument, laser power, etc., it is recommended to evaluate the fitting methods with global slopes. 
+    On the other hand, if the curves were obtained under different experimental conditions, it is advisable to use local slopes.
+    To run a variety of models and compare them, you can choose the 'Compare models' option.
+
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto2.2_base_windows.png" alt="Baseline Window setting" width="600" loading="lazy"/>
+<img src="tuto2.3_fitting_mode_compare.png" alt="Fitting mode and other settings" width="600" loading="lazy"/>
 </figure>
 <br>
 
 <li class="vf-list__item ">
-    The Setting 2c controls the amount of parameters and type of fitting. For more information check out 
-    "Choosing a model" in the User Guide.
-    We choose the setting global slopes and global intercepts as this method has the least parameters. 
-    The "Fit scale factor" corrects for small experimental errors.
-    The Number of residues is necessary for an initial estimate of the ΔC<sub>p</sub> parameter and is the 
-    number of residues of the analyzed protein.
+    Click on 'Run fitting' to start the fitting process. CheMelt will ask to select the baseline types to be used for the fitting. 
+    The baseline types are different mathematical functions that describe the baselines of the unfolding curve.
+    For differential scanning fluorimetry data, we have found that exponential baselines provide good fits for the unfolded baseline and that
+    linear or exponential baselines provide good fits for the native baseline. However, the best choice of baseline types can depend on the specific data and should be evaluated critically.
+    Here, we select 'Linear' and 'Exponential' for the native baseline and 'Exponential' for the unfolded baseline.
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto2.3_fitting_mode_scale.png" alt="Fitting mode and other settings" width="800" loading="lazy"/>
-</figure>
-<br>
-
-<li class="vf-list__item ">
-    The Setting 2d and 2e control the type of baseline fitted to the curves. For the native baseline (2d) a 
-    linear baseline is usually used and for the unfolded baseline (2e) a quadratic. Here we use linear for the 
-    native and exponential for the unfolded, as we found that the exponential baseline generalizes better.
-    The option "Set param bounds" let's you manually choose the parameter boundries and the option 
-    "Fit data subset" let's you reduce the number of datapoints for a faster fitting with often a very similar 
-    result and thus we choose 100 maximal points per curve.  
-    With the "Run Fitting!" button the fitting is started. This can take some minutes depending on the size of the dataset.
-</li>
-
-<figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto2.4_base_types_and_settings.png" alt="Baseline types and other settings" width="1000" loading="lazy"/>
+<img src="tuto2.4_base_types_and_settings.png" alt="Baseline types and other settings" width="600" loading="lazy"/>
 </figure>
 <br>
 
@@ -190,7 +190,10 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
  <ol class="vf-intro__text">
 
 <li class="vf-list__item ">
-    The fitted data can be seen in the "Fitted signal" Tab as black lines.
+    After the fitting is done, the model with the lowest EBIC (extended bayesian information criterion) value is shown in the
+    'Fitted signal' tab. If the fitted curves do not match the data well, it is recommended to discard that model and evaluate the other models.
+    A Table with a comparison of the different models is shown in the 'Model comparison' tab.
+    In this case, all the models provide similar values for the thermodynamic parameters.
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
@@ -198,23 +201,16 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
 </figure>
 <br>
 
-<li class="vf-list__item ">
-    Underneath the graph are different plotting options to change the visualisation.
-</li>
-
-<figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto3.2_plot_options.png" alt="Plotting options" width="1000" loading="lazy"/>
-</figure>
-<br>
 
 <li class="vf-list__item ">
-    In the Tab "Fitted params" you can find the thermodynamic parameters as well as technical parameters used 
-    to fit the formula to the curve with their respective units. Additionally, you can find the relative error and 
-    the boundries used for fitting. The relative error is an indication of the quality of the fit. While a high relative error 
+    In the Tab "Fitted params" you can find the thermodynamic parameters as well as baseline parameters used 
+    to fit the formula to the curve with their respective units. 
+    Additionally, you can find the relative error and 
+    the boundaries used for fitting. The relative error is an indication of the quality of the fit. While a high relative error 
     indicates an inadequate model, a low error is not proof of an adequate one.<br>
     The resulting thermodynamic parameters should always be critically evaluated, as errors of the fit are possible and they 
     should roughly match expectations. If they reach the boundaries, for example, it can be due to outliers not being accounted 
-    for, which skew the results.
+    for, which skew the results. Fits with physically unreasonable parameters should be discarded. 
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
@@ -222,14 +218,6 @@ As we can see here, the curve with the denaturant concentration of 6.54 M and 2.
 </figure>
 <br>
 
-<li class="vf-list__item ">
-    In the tab "DG vs T" you can find the calculated Gibbs free energy ΔG againt the temperature as a graphical representation.
-</li>
-
-<figure class="vf-figure vf-figure--align vf-figure--align-centered">
-<img src="tuto3.4_DG_graph.png" alt="Graph showing the DG in dependence on T" width="1000" loading="lazy"/>
-</figure>
-<br>
 
 <li class="vf-list__item ">
     The results can be exported in the tab "3. Export results". Here the fitted parameters, the original signal and the fitted 
