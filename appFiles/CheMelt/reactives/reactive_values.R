@@ -28,6 +28,7 @@ reactives <- reactiveValues(
     cp_value=NULL, # Cp value - if given, used as fixed param
     fitting_done = FALSE, # whether fitting is finished
     conf_interval_calculated = FALSE, # whether confidence interval is calculated
+    leave_one_out_done = FALSE, # whether leave-one-out analysis is done
     comparison_table_shown = FALSE, # whether the model comparison table is shown
     # Unified plot configuration (used for both regular and fit plots)
     plot_width_val = 1000, # plot width in pixels

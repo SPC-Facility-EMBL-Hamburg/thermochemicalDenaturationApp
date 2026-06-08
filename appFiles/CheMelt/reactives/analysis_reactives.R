@@ -348,6 +348,23 @@ observeEvent(input$btn_call_fit,{
 
 observeEvent(input$btn_cal_conf_interval,{
 
+    # create a modal dialog to ask the user if they want to use leave one out or/and likelihood profiling to calculate the confidence intervals. 
+    showModal(modalDialog(
+        title = "Confidence intervals calculation",
+        p("Select the method(s) to calculate the confidence intervals:"),
+        checkboxInput("use_likelihood_profiling", "Likelihood profiling", value = TRUE),
+        checkboxInput("use_leave_one_out", "Leave-one-out cross-validation", value = FALSE),
+        easyClose = FALSE,
+        footer = tagList(
+            modalButton("Cancel"),
+            actionButton("confirm_conf_interval_calculation", "Confirm")
+        )
+    ))
+
+})
+
+observeEvent(input$confirm_conf_interval_calculation,{
+
     withBusyIndicatorServer("Go2",{
 
         # if tab panel for confidence intervals is present delete it first
@@ -356,27 +373,84 @@ observeEvent(input$btn_cal_conf_interval,{
             reactives$conf_interval_calculated <- FALSE
         }
 
-        popUpInfo('Calculating asymmetric confidence intervals. 
-        Please wait some minutes...')
+        # if tab panel for leave-one-out results is present delete it first
+        if (reactives$leave_one_out_done) {
+            removeTab('tabset_fit',target = "Leave-one-out CV")
+            reactives$leave_one_out_done <- FALSE
+        }
 
-        write_logbook("Calculating asymmetric confidence intervals.")
-        pySample$calculate_confidence_intervals()
-
-        conf_int_df <- pySample$ci_df
-        conf_int_df <- pandas_to_r(conf_int_df)
-
-        reactives$conf_interval_calculated <- TRUE
-
-        # append a tab panel with the confidence intervals table
-        tab_panel_to_add <- tabPanel(
-            "Confidence intervals",
-            withSpinner(tableOutput("conf_int_table"))
+        popUpInfo(
+            'Calculating confidence intervals. 
+            Please wait some minutes...'
         )
 
-        appendTab('tabset_fit',tab_panel_to_add)
-        output$conf_int_table <- renderTable({
-            conf_int_df
-        })
+        if (input$use_likelihood_profiling) {
+
+            write_logbook("Calculating asymmetric confidence intervals.")
+            pySample$calculate_confidence_intervals()
+
+            conf_int_df <- pySample$ci_df
+            conf_int_df <- pandas_to_r(conf_int_df)
+
+            reactives$conf_interval_calculated <- TRUE
+
+            # append a tab panel with the confidence intervals table
+            tab_panel_to_add <- tabPanel(
+                "Confidence intervals",
+                withSpinner(tableOutput("conf_int_table"))
+            )
+
+            appendTab('tabset_fit',tab_panel_to_add)
+            output$conf_int_table <- renderTable({
+                conf_int_df
+            })
+
+        }
+        
+        if (input$use_leave_one_out) {
+
+            write_logbook("Calculating leave-one-out cross-validation results.")
+
+            # Run python and catch error
+            result <- tryCatch(
+                {
+
+                    pySample$leave_one_out_cross_validation()
+
+                }, error = function(e) {
+                    if (inherits(e, "python.builtin.RuntimeError")) {
+                    err <- py_last_error()
+                    popUpWarning(
+                        paste0("⚠ Error during leave-one-out cross-validation: ", err$value)
+                    )
+                    return('Error')
+                    } else {
+                    stop(e) # rethrow non-Python errors
+                    }
+                }
+            )
+
+            # No error results in a NULL value
+            if (!is.null(result)) return(NULL)
+
+            leave_one_out_df <- pySample$loo_df
+            leave_one_out_df <- pandas_to_r(leave_one_out_df)
+
+            reactives$leave_one_out_done <- TRUE
+
+            # append a tab panel with the leave-one-out results table
+            tab_panel_to_add <- tabPanel(
+                "Leave-one-out CV",
+                withSpinner(tableOutput("leave_one_out_table"))
+            )
+
+            appendTab('tabset_fit',tab_panel_to_add)
+            output$leave_one_out_table <- renderTable({
+                leave_one_out_df
+            })
+
+        }
+
         
         popUpSuccess('✅ Confidence intervals calculated successfully!')
 
@@ -514,6 +588,9 @@ observeEvent(input$confirm_model_comparison,{
     # Find if the best model is with a rescale and plot it
     selected_model <- model_comparison_df[1,3]
     
+    # Write the selected model in the logbook
+    write_logbook(paste0("Best model selected based on EBIC: ", selected_model))
+
     if (grepl("global intercepts", selected_model)) {
     
         tab_panel_to_add <- tabPanel(
