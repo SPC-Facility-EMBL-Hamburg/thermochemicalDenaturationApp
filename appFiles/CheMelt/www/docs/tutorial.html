@@ -51,13 +51,15 @@
  <ol class="vf-intro__text">
 
 <li class="vf-list__item ">
-    In this tutorial we will work with some example data. Please download the NanoDSF example data <a href="nDSFdemoFile.xlsx" download>nDSFdemoFile.xlsx</a> to your computer. 
-    This data is exemplary data of a NanoDSF experiment. It contains multiple thermal denaturation curves of samples with different chemical denaturant concentrations of two denaturants, GuHCl and Urea.
+  In this Tutorial we will work with example data published by <a href="https://doi.org/10.1016/j.ab.2020.113863" target="_blank" rel="noopener noreferrer">Hamborg et al., 2020</a>.
+    Please download the NanoDSF example data <a href="20191202_ACBP_15C_95C_processed.xlsx.xlsx" download>ACBP.xlsx</a> to your computer. 
+    This data is exemplary data of a NanoDSF experiment. It contains multiple thermal denaturation curves of samples with different GuHCl concentrations.
 
 </li>
 
 <li class="vf-list__item ">
-    In the tab "1. Import data" upload the data in the Input field under "1. DSF files". You can upload multiple files at once. The tool can handle different file formats (check the User Guide).
+    In the tab "1. Import data" upload the data in the Input field under "1. DSF files". You can upload multiple files at once. 
+    The tool can handle different file formats (check the User Guide).
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
@@ -66,7 +68,8 @@
 <br>
 
 <li class="vf-list__item ">
-    The option "Signal" let's you choose different signals captured in the experiment and present in the file. Here we choose 350nm. Additionally, the signals can be normalised.
+    The option "Signal" let's you choose different signals captured in the experiment and present in the file.
+    Here we choose both 350 nm and 330 nm. Additionally, the signals can be normalised.
     The option "Temperature range (ºC)" let's you choose the temperature range which will be analyzed.
 </li>
 
@@ -76,8 +79,8 @@
 <br>
 
 <li class="vf-list__item ">
-    In the field "[Denaturant] (M)" you can choose which denaturant concentrations should be included in the fitting. As the demo file contains the results of two kinds of 
-    denaturants, GuHCl and Urea, we choose only the samples with GuHCl.
+    In the field "[Denaturant] (M)" you can choose which denaturant concentrations should be included in the fitting. 
+    Here, we can exclude the sample with no denaturant. The denaturant concentrations are automatically read from the file but can also be manually changed.
 </li>
 
 <figure class="vf-figure vf-figure--align vf-figure--align-centered">
