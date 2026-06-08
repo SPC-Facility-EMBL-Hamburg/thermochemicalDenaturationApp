@@ -25,30 +25,40 @@ file_example <- "./www/nDSFdemoFile.xlsx"
 
 pySample <- pyChemelt$Monomer('test')
 pySample$read_multiple_files(file_example)
-pySample$set_signal(pySample$signals[1])
+pySample$set_signal(list('Ratio'))
 
 
 pySample$set_denaturant_concentrations()
-pySample$select_conditions(normalise_to_global_max=TRUE)
+conditions = c(rep(TRUE,16),rep(FALSE,8),rep(FALSE,24))
+pySample$select_conditions(normalise_to_global_max=FALSE)
 pySample$estimate_derivative()
 pySample$guess_Tm()
-
-
-library(plotly)
-
-source("./helpers_R/helpers.R")
-source("./helpers_R/plot_helpers.R")
-
 pySample$reset_fittings_results()
-pySample$estimate_derivative()
+pySample$n_residues <- 100
+pySample$max_points <- 100
 
 
-signal_df     <- pySample$signal_to_df()
-derivative_df <- pySample$signal_to_df(signal_type = "derivative")
+pySample$guess_initial_parameters(
+native_baseline_type     = 'linear',
+unfolded_baseline_type   = 'linear',
+window_range_native = 10,
+window_range_unfolded = 10
+)
 
-signal_df     <- pandas_to_r(signal_df)
-derivative_df <- pandas_to_r(derivative_df)
 
+source('./helpers_R/helpers.R')
 
+pySample$estimate_baseline_parameters(
+    native_baseline_type = 'linear',
+    unfolded_baseline_type = 'linear',
+    window_range_native = 10,
+    window_range_unfolded = 10
+)
 
+pySample$fit_thermal_unfolding_global()
+pySample$fit_thermal_unfolding_global_global()
+print(pySample$params_df)
 
+pySample$leave_one_out_cross_validation()
+
+print(pySample$loo_df)

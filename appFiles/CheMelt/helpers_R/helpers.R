@@ -87,3 +87,45 @@ purge_logbook_lines <- function(lines) {
 
     return(lines)
 }
+
+highlight_cp_line <- function(txt,
+                              threshold = 0.3,
+                              color = "red",
+                              bold = TRUE) {
+
+  lines <- strsplit(txt, "\n")[[1]]
+
+  out <- vapply(lines, function(line) {
+
+    # Match ONLY lines starting with Cp0:
+    if (grepl("^\\s*Cp0\\s*:", line)) {
+
+      # Extract value
+      val <- suppressWarnings(
+        as.numeric(
+          sub("^\\s*Cp0\\s*:\\s*([0-9.eE+-]+).*", "\\1", line)
+        )
+      )
+
+      # Highlight if below threshold
+      if (!is.na(val) && val < threshold) {
+
+        style <- paste0(
+          "color:", color, ";",
+          if (bold) "font-weight:bold;" else ""
+        )
+
+        return(sprintf(
+          "<span style='%s'>%s</span>",
+          style,
+          line
+        ))
+      }
+    }
+
+    line
+
+  }, character(1))
+
+  paste(out, collapse = "<br>")
+}

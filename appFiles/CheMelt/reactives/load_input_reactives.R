@@ -36,15 +36,15 @@ observeEvent(input$dsf_input_files, {
 
         logbook_txt <- paste0("Files imported: ",paste(input$dsf_input_files$name, collapse = ", "))
 
-        write_logbook(logbook_txt,include_time = TRUE)
+        write_logbook(logbook_txt, include_time = TRUE)
 
-        updateSelectInput(session, "which",choices  = pySample$signals)
-
+        updateSelectInput(session, "which", choices  = pySample$signals,selected = pySample$signals[1])
+        
         pySample$set_signal(pySample$signals[1])
 
         # Find max and min temperature
-        min_temp <- floor(pySample$global_min_temp) - 5
-        max_temp <- ceiling(pySample$global_max_temp) + 5
+        min_temp <- floor(pySample$global_min_temp) 
+        max_temp <- ceiling(pySample$global_max_temp) 
 
         # Update the slider range
         updateSliderInput(session, "sg_range", min = min_temp, max = max_temp,value = c(min_temp, max_temp))
@@ -86,7 +86,11 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
 
     req(reactives$update_plots)
     req(input$table1)
+    req(input$which)
+    req(input$sg_range)
+    req(length(input$sg_range) == 2)
     reactives$update_plots <- NULL
+
     pySample$set_signal(input$which)
 
     logbook_txt <- paste0("Signal set to: ",input$which)
@@ -107,6 +111,12 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
 
     logbook_txt <- paste0("Temperature range set to: ",paste(input$sg_range[1], input$sg_range[2], sep = " - "))
     write_logbook(logbook_txt,include_time = FALSE)
+
+    # Update the slider input for the native baseline estimation
+    updateSliderInput(session, "baseline_window_native", min = input$sg_range[1], max = input$sg_range[1]+25, value = c(input$sg_range[1], input$sg_range[1]+10))
+
+    # Update the slider input for the unfolded baseline estimation
+    updateSliderInput(session, "baseline_window_unfolded", min = input$sg_range[2]-25, max = input$sg_range[2], value = c(input$sg_range[2]-10, input$sg_range[2]))
 
     pySample$estimate_derivative()
     pySample$guess_Tm()

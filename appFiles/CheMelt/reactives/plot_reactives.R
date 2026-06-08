@@ -298,7 +298,6 @@ output$signal <- renderPlotly({
         show_colorbar           = reactives$show_colorbar_val,
         show_grid_x             = reactives$show_grid_x_val,
         show_grid_y             = reactives$show_grid_y_val,
-        y_axis_label            = input$which,
         marker_size             = reactives$plot_marker_size_val,
         line_width              = reactives$plot_line_width_val,
         max_points              = reactives$max_points_val,
@@ -331,7 +330,6 @@ output$first_der <- renderPlotly({
         show_colorbar           = reactives$show_colorbar_val,
         show_grid_x             = reactives$show_grid_x_val,
         show_grid_y             = reactives$show_grid_y_val,
-        y_axis_label            = input$which,
         marker_size             = NULL,
         line_width              = reactives$plot_line_width_val,
         max_points              = reactives$max_points_val,
@@ -350,10 +348,12 @@ output$tm_vs_den <- renderPlotly({
     req(input$table1)
     req(reactives$update_plots)
 
-    df = pySample$t_melting_df_multiple[[1]]
+    # Create y-labels by combining base text with signal names
+    y_labels <- paste0("T<sub>m</sub> (°C) / 1st deriv. - ", pySample$signal_names)
 
     fig <- plot_2d(
-        df                      = df,
+        df                      = pySample$t_melting_df_multiple,
+        y_labels                = y_labels,
         plot_width              = reactives$plot_width_val,
         plot_height             = reactives$plot_height_val,
         plot_type               = reactives$plot_type_val,
@@ -416,7 +416,6 @@ output$fitted_signal <- renderPlotly({
         show_colorbar           = reactives$show_colorbar_val,
         show_grid_x             = reactives$show_grid_x_val,
         show_grid_y             = reactives$show_grid_y_val,
-        y_axis_label            = input$which,
         marker_size             = reactives$plot_marker_size_val,
         line_width              = reactives$plot_line_width_val,
         max_points              = reactives$max_points_val,
@@ -450,7 +449,6 @@ output$fitted_signal_rescaled <- renderPlotly({
         show_colorbar           = reactives$show_colorbar_val,
         show_grid_x             = reactives$show_grid_x_val,
         show_grid_y             = reactives$show_grid_y_val,
-        y_axis_label            = input$which,
         marker_size             = reactives$plot_marker_size_val,
         line_width              = reactives$plot_line_width_val,
         max_points              = reactives$max_points_val,
@@ -550,7 +548,6 @@ output$fitted_signal_and_residuals <- renderPlotly({
         show_colorbar           = reactives$show_colorbar_val,
         show_grid_x             = reactives$show_grid_x_val,
         show_grid_y             = reactives$show_grid_y_val,
-        y_axis_label            = input$which,
         marker_size             = reactives$plot_marker_size_val,
         line_width              = reactives$plot_line_width_val,
         max_points              = reactives$max_points_val,

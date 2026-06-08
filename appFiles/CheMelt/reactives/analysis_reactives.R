@@ -4,21 +4,31 @@ observeEvent(input$n_residues,{
 
 })
 
+
 observeEvent(input$btn_call_fit,{
 
     req(input$table1)
     req(reactives$signal_df)
 
-    write_logbook( "Fitting process started")
+    unfolding_model <- input$unfolding_model
 
-    write_logbook(paste0("Baseline window (native): ",input$baseline_window_native))
-    write_logbook(paste0("Baseline window (unfolded): ",input$baseline_window_unfolded))
+    fixed_cp <- input$fix_cp_option == 'fix_cp'
+
+    reactives$fitting_done <- FALSE
+
+    write_logbook( "Fitting process started")
 
     native_baseline_type <- input$native_dependence
     unfolded_baseline_type <- input$unfolded_dependence
 
-    write_logbook(paste0("Native baseline dependence set to: ",native_baseline_type))
-    write_logbook(paste0("Unfolded baseline dependence set to: ",unfolded_baseline_type))
+    write_logbook(paste0("Baseline window (native): ",input$baseline_window_native))
+    write_logbook(paste0("Baseline window (unfolded): ",input$baseline_window_unfolded))
+
+    # print baseline type if the compare options is not selected
+    if (unfolding_model != "compare-many-models") {
+        write_logbook(paste0("Native baseline dependence set to: ",native_baseline_type))
+        write_logbook(paste0("Unfolded baseline dependence set to: ",unfolded_baseline_type))
+    }
 
     write_logbook(paste0("Number of residues set to: ",input$n_residues))
 
@@ -42,8 +52,9 @@ observeEvent(input$btn_call_fit,{
 
     pySample$reset_fittings_results()
 
+    c1 <- unfolding_model == "global-global-global"
     # Return an error if the user selected the global global global model but wants to use the Ratio signal
-    if (input$unfolding_model == "global-global-global" & "Ratio" %in% pySample$signal_names) {
+    if (c1 & "Ratio" %in% pySample$signal_names) {
         popUpWarning(
             "⚠ Error: The 'global-global-global' model cannot be used with the 'Ratio' signal type.
             Please select a different signal."
@@ -70,11 +81,19 @@ observeEvent(input$btn_call_fit,{
             reactives$scaled_tab_shown <- FALSE
         }
 
-        popUpInfo(
-          'Fitting started.
-          The plot below will be updated when the fitting is finished.
-          Please wait some minutes...'
-        )
+        # if tab panel for confidence intervals is present delete it first
+        if (reactives$conf_interval_calculated) {
+            removeTab('tabset_fit',target = "Confidence intervals")
+            reactives$conf_interval_calculated <- FALSE
+        }
+
+        # Select the popup message based on the model selected
+        if (unfolding_model != "compare-many-models") {
+            pop_msg <- 'Fitting started. The plot below will be updated when the fitting is finished. Please wait some minutes...'
+            popUpInfo(pop_msg)
+            write_logbook(paste0("Fitting model selected: ",unfolding_model))
+
+        }
 
         pySample$n_residues <- input$n_residues
 
@@ -84,25 +103,12 @@ observeEvent(input$btn_call_fit,{
               pySample$guess_initial_parameters(
               native_baseline_type     = 'linear',
               unfolded_baseline_type   = 'linear',
-              window_range_native = input$baseline_window_native,
-              window_range_unfolded = input$baseline_window_unfolded
+              window_range_native      = input$baseline_window_native,
+              window_range_unfolded    = input$baseline_window_unfolded
               )
-
-            if (input$unfolding_model != "global-local-local") {
-                popUpInfo('The search for the initial parameters is finished. Please wait some minutes...')
-            }
 
             reactives$find_initial_params <- FALSE
         }
-
-        write_logbook(paste0("Fitting model selected: ",input$unfolding_model))
-
-        pySample$estimate_baseline_parameters(
-            native_baseline_type     = native_baseline_type,
-            unfolded_baseline_type   = unfolded_baseline_type,
-            window_range_native     = input$baseline_window_native,
-            window_range_unfolded   = input$baseline_window_unfolded
-        )
 
         user_cp_limits <- NULL
         user_dh_limits <- NULL
@@ -136,14 +142,73 @@ observeEvent(input$btn_call_fit,{
 
           # If cp value is given, it will be used as fixed parameter
           # The bounds are ignored in this case
-          if (input$fix_cp_option == 'fix_cp') {
+          if (fixed_cp) {
             
-              cp_value <- input$cp_value_fixed
+              cp_value <- input$cp_value
               write_logbook(paste0("Cp fixed to user-defined value: ",cp_value))
 
           }
 
         }
+
+        reactives$user_cp_limits <- user_cp_limits
+        reactives$user_dh_limits <- user_dh_limits
+        reactives$user_tm_limits <- user_tm_limits
+        reactives$cp_value <- cp_value
+
+        # Compare models if the user selected the option to compare models
+        if (unfolding_model == "compare-many-models") {
+
+            # Create a modal dialog to ask for the types of baselines to fit
+            # Three select inout with multiple selection allowed: one for the model and two for the baselines
+            # constant, linear, quadratic, exponential
+            showModal(modalDialog(
+                title = "Model comparison",
+                # Small text to explain the user what to do
+
+                # Checkbox input if slopes are shared or not across conditions
+                column(12,
+                # tooltip to explain the user what global slopes means
+                p(
+                    HTML("<b>Compare models with global slopes (recommended)</b>"),
+                    span(shiny::icon("info-circle"), id = "info_compare_global_slopes"),
+                    checkboxInput("compare_global_slopes", label=NULL, value = TRUE),
+
+                    tippy::tippy_this(
+                    elementId = "info_compare_global_slopes",
+                    tooltip = "If enabled, the models with global slopes will be included in the comparison.
+                    The models with global slopes are recommended because they are more robust and provide more accurate thermodynamic parameters. 
+                    However, if the unfolding curves have very different shapes across conditions, the models with global slopes might not fit well and the user might want to compare them with models with local slopes.
+                    As a guide, to analyse datasets obtained under the same experimental conditions (e.g., same protein concentrations, same instrument, same laser power), the models with global slopes should be preferred. 
+                    If the dataset includes unfolding curves obtained under different conditions (e.g., different instruments, different instrument setup), the models with local slopes might fit better.",
+                    placement = "right")
+
+                )),
+
+                selectInput("native_baselines_to_compare", "Select one or two native baselines to compare:",
+                            choices = c("constant", "linear", "quadratic", "exponential"),
+                            selected = NULL,
+                            multiple = TRUE),
+                selectInput("unfolded_baselines_to_compare", "Select one or two unfolded baselines to compare:",
+                            choices = c("constant", "linear", "quadratic", "exponential"),
+                            selected = NULL,
+                            multiple = TRUE),
+                easyClose = FALSE,
+                footer = tagList(
+                    modalButton("Cancel"),
+                    actionButton("confirm_model_comparison", "Confirm")
+                )
+            ))
+
+            return(NULL)
+        }
+
+        pySample$estimate_baseline_parameters(
+            native_baseline_type    = native_baseline_type,
+            unfolded_baseline_type  = unfolded_baseline_type,
+            window_range_native     = input$baseline_window_native,
+            window_range_unfolded   = input$baseline_window_unfolded
+        )
 
         pySample$fit_thermal_unfolding_global(
             cp_limits = user_cp_limits,
@@ -152,7 +217,10 @@ observeEvent(input$btn_call_fit,{
             cp_value = cp_value
         )
 
-        if (input$unfolding_model %in% c("global-global-local", "global-global-global")) {
+
+        condition <- unfolding_model %in% c("global-global-local", "global-global-global")
+
+        if (condition) {
 
             pySample$set_signal_id()
 
@@ -178,8 +246,8 @@ observeEvent(input$btn_call_fit,{
 
         }
 
-
-        if (input$unfolding_model == "global-global-global") {
+        condition <- unfolding_model == "global-global-global"
+        if (condition) {
             popUpInfo('The fitting with global slopes and local intercepts is finished.
             Now the data will be fitted with global slopes and global intercepts. Please wait...')
 
@@ -199,6 +267,7 @@ observeEvent(input$btn_call_fit,{
                     stop(e) # rethrow non-Python errors
                     }
                 }
+
             )
 
             if (!is.null(result)) return(NULL)
@@ -254,10 +323,302 @@ observeEvent(input$btn_call_fit,{
        dg_df <- pandas_to_r(dg_df)
        reactives$dg_df <- dg_df
 
+        reactives$fitting_done <- TRUE
         popUpSuccess('✅ Fitting completed!')
+
+        pySample$create_fit_report()
+        report_string <- pySample$fit_report
+        report_string <- highlight_cp_line(report_string)
+
+        output$fitReport <- renderUI({
+            HTML(
+                paste0(
+                "<pre style='font-size:13px;'>",
+                report_string,
+                "</pre>"
+                )
+            )
+        })
 
         write_logbook("Fitting completed successfully.")
 
     })
+
+})
+
+observeEvent(input$btn_cal_conf_interval,{
+
+    # create a modal dialog to ask the user if they want to use leave one out or/and likelihood profiling to calculate the confidence intervals. 
+    showModal(modalDialog(
+        title = "Confidence intervals calculation",
+        p("Select the method(s) to calculate the confidence intervals:"),
+        checkboxInput("use_likelihood_profiling", "Likelihood profiling", value = TRUE),
+        checkboxInput("use_leave_one_out", "Leave-one-out cross-validation", value = FALSE),
+        easyClose = FALSE,
+        footer = tagList(
+            modalButton("Cancel"),
+            actionButton("confirm_conf_interval_calculation", "Confirm")
+        )
+    ))
+
+})
+
+observeEvent(input$confirm_conf_interval_calculation,{
+
+    withBusyIndicatorServer("Go2",{
+
+        # if tab panel for confidence intervals is present delete it first
+        if (reactives$conf_interval_calculated) {
+            removeTab('tabset_fit',target = "Confidence intervals")
+            reactives$conf_interval_calculated <- FALSE
+        }
+
+        # if tab panel for leave-one-out results is present delete it first
+        if (reactives$leave_one_out_done) {
+            removeTab('tabset_fit',target = "Leave-one-out CV")
+            reactives$leave_one_out_done <- FALSE
+        }
+
+        popUpInfo(
+            'Calculating confidence intervals. 
+            Please wait some minutes...'
+        )
+
+        if (input$use_likelihood_profiling) {
+
+            write_logbook("Calculating asymmetric confidence intervals.")
+            pySample$calculate_confidence_intervals()
+
+            conf_int_df <- pySample$ci_df
+            conf_int_df <- pandas_to_r(conf_int_df)
+
+            reactives$conf_interval_calculated <- TRUE
+
+            # append a tab panel with the confidence intervals table
+            tab_panel_to_add <- tabPanel(
+                "Confidence intervals",
+                withSpinner(tableOutput("conf_int_table"))
+            )
+
+            appendTab('tabset_fit',tab_panel_to_add)
+            output$conf_int_table <- renderTable({
+                conf_int_df
+            })
+
+        }
+        
+        if (input$use_leave_one_out) {
+
+            write_logbook("Calculating leave-one-out cross-validation results.")
+
+            # Run python and catch error
+            result <- tryCatch(
+                {
+
+                    pySample$leave_one_out_cross_validation()
+
+                }, error = function(e) {
+                    if (inherits(e, "python.builtin.RuntimeError")) {
+                    err <- py_last_error()
+                    popUpWarning(
+                        paste0("⚠ Error during leave-one-out cross-validation: ", err$value)
+                    )
+                    return('Error')
+                    } else {
+                    stop(e) # rethrow non-Python errors
+                    }
+                }
+            )
+
+            # No error results in a NULL value
+            if (!is.null(result)) return(NULL)
+
+            leave_one_out_df <- pySample$loo_df
+            leave_one_out_df <- pandas_to_r(leave_one_out_df)
+
+            reactives$leave_one_out_done <- TRUE
+
+            # append a tab panel with the leave-one-out results table
+            tab_panel_to_add <- tabPanel(
+                "Leave-one-out CV",
+                withSpinner(tableOutput("leave_one_out_table"))
+            )
+
+            appendTab('tabset_fit',tab_panel_to_add)
+            output$leave_one_out_table <- renderTable({
+                leave_one_out_df
+            })
+
+        }
+
+        
+        popUpSuccess('✅ Confidence intervals calculated successfully!')
+
+    })
+
+})
+
+observeEvent(input$confirm_model_comparison,{
+
+    removeModal()
+
+    native_baselines_to_compare <- input$native_baselines_to_compare
+    unfolded_baselines_to_compare <- input$unfolded_baselines_to_compare
+
+    if (is.null(native_baselines_to_compare) || is.null(unfolded_baselines_to_compare)) {
+        popUpWarning("⚠ Please select at least one native baseline and one unfolded baseline to compare.")
+        return(NULL)
+     }
+
+    write_logbook(paste0("User selected the following native baselines to compare: ", paste(native_baselines_to_compare, collapse = ", ")))
+    write_logbook(paste0("User selected the following unfolded baselines to compare: ", paste(unfolded_baselines_to_compare, collapse = ", ")))
+
+    native_baselines_to_compare <- as.list(native_baselines_to_compare)
+    unfolded_baselines_to_compare <- as.list(unfolded_baselines_to_compare)
+
+    # Verify that they have at most 5 options in total otherwise the comparison will take too long and might not be useful
+    if (length(native_baselines_to_compare) + length(unfolded_baselines_to_compare) > 5) {
+        popUpWarning("⚠ Please select at most five options in total for the native baselines and unfolded baselines to compare to avoid an excessively long fitting time.")
+        return(NULL)
+    }
+
+    global_model_types <- if (input$compare_global_slopes) {
+        list("global_global", "global_global_global")
+    } else {
+        list("global")
+    }
+
+    withBusyIndicatorServer("Go",{
+
+        pySample$compare_models(
+            native_baseline_types = native_baselines_to_compare,
+            unfolded_baseline_types = unfolded_baselines_to_compare,
+            global_model_types=global_model_types,
+            cp_limits = reactives$user_cp_limits,
+            dh_limits = reactives$user_dh_limits,
+            tm_limits = reactives$user_tm_limits,
+            cp_value = reactives$cp_value
+        )
+
+    })
+
+    # If present remove the model comparison Table before adding the new one
+    if (reactives$comparison_table_shown) {
+        removeTab('tabset_fit',target = "Model comparison")
+        reactives$comparison_table_shown <- FALSE
+    }
+
+    # Print results
+    model_comparison_df <- pySample$comparison_df
+    model_comparison_df <- pandas_to_r(model_comparison_df)
+
+    # We need duplicates, one for the modal and another for the tab
+    output$model_comparison_table <- renderTable({
+        model_comparison_df
+    },digits=2)
+
+    output$model_comparison_table_2 <- renderTable({
+        model_comparison_df
+    },digits=3)
+
+    # Show the model comparison results in a modal dialog
+    showModal(modalDialog(
+        title = "Model comparison results",
+        div(style = "overflow-x: auto;",
+            withSpinner(tableOutput("model_comparison_table"))
+        ),
+        easyClose = TRUE,
+        footer = modalButton("Close"),
+        size = "l"
+    ))
+
+    # Append also the model comparison tab to the Tabpanel
+    tab_panel_to_add <- tabPanel(
+        "Model comparison",
+        withSpinner(tableOutput("model_comparison_table_2"))
+    )
+
+    appendTab('tabset_fit',tab_panel_to_add)
+
+    reactives$comparison_table_shown <- TRUE
+
+    # Plot and show the stats of the best model according to the EBIC criteria
+    compare_py_fit_objects <- pySample$fit_objects
+    best_py_fit_obj <- pySample$fit_objects[[1]]
+
+    if (input$fit_subset) {
+        signal_df <- best_py_fit_obj$signal_to_df()
+        signal_df <- pandas_to_r(signal_df)
+        reactives$signal_df <- signal_df
+    }
+
+    fitted_df <- best_py_fit_obj$signal_to_df(signal_type = "fitted")
+    fitted_df <- pandas_to_r(fitted_df)
+
+    reactives$signal_df_fitted <- fitted_df
+
+    # Include the fitted parameters into a Table
+    fitted_parameters <- best_py_fit_obj$params_df
+    fitted_parameters <- pandas_to_r(fitted_parameters)
+
+    output$fitted_params <- renderTable({
+        fitted_parameters
+    },digits=4)
+        
+    dg_df <- best_py_fit_obj$dg_df
+    dg_df <- pandas_to_r(dg_df)
+    reactives$dg_df <- dg_df
+
+    reactives$fitting_done <- TRUE
+
+    best_py_fit_obj$create_fit_report()
+    report_string <- best_py_fit_obj$fit_report
+    report_string <- highlight_cp_line(report_string)
+
+    output$fitReport <- renderUI({
+        HTML(
+            paste0(
+            "<pre style='font-size:13px;'>",
+            report_string,
+            "</pre>"
+            )
+        )
+    })
+    
+    # Find if the best model is with a rescale and plot it
+    selected_model <- model_comparison_df[1,3]
+    
+    # Write the selected model in the logbook
+    write_logbook(paste0("Best model selected based on EBIC: ", selected_model))
+
+    if (grepl("global intercepts", selected_model)) {
+    
+        tab_panel_to_add <- tabPanel(
+            "Fitted signal (rescaled)",
+            withSpinner(plotlyOutput("fitted_signal_rescaled"))
+        )
+
+        appendTab('tabset_fit',tab_panel_to_add)
+
+        reactives$scaled_tab_shown <- TRUE
+
+        df_scaled <- best_py_fit_obj$signal_to_df(scaled = TRUE)
+        df_scaled <- pandas_to_r(df_scaled)
+
+        reactives$signal_df_scaled <- df_scaled
+
+        fitted_df_scaled <- best_py_fit_obj$signal_to_df(signal_type = "fitted",scaled = TRUE)
+        fitted_df_scaled <- pandas_to_r(fitted_df_scaled)
+
+        reactives$signal_df_fitted_scaled <- fitted_df_scaled
+
+    }
+
+    # End of - Plot and show the stats of the best model according to the EBIC criteria
+
+    # Set pySample to be the best fit object - so the user can compute confidence intervals
+    
+    # Caution - we are changing the global pySample object to be the best fit model
+    pySample <<- best_py_fit_obj   
 
 })

@@ -22,6 +22,14 @@ reactives <- reactiveValues(
     dh_upp_bound = 450, # DH upper bound
     cp_low_bound = 0.1, # Cp lower bound
     cp_upp_bound = 6, # Cp upper bound
+    user_cp_limits=NULL, # user-defined Cp limits
+    user_dh_limits=NULL, # user-defined DH limits
+    user_tm_limits=NULL, # user-defined Tm limits
+    cp_value=NULL, # Cp value - if given, used as fixed param
+    fitting_done = FALSE, # whether fitting is finished
+    conf_interval_calculated = FALSE, # whether confidence interval is calculated
+    leave_one_out_done = FALSE, # whether leave-one-out analysis is done
+    comparison_table_shown = FALSE, # whether the model comparison table is shown
     # Unified plot configuration (used for both regular and fit plots)
     plot_width_val = 1000, # plot width in pixels
     plot_height_val = 600, # plot height in pixels
@@ -43,3 +51,9 @@ reactives <- reactiveValues(
     tick_width_val = 2 # tick width
 )
 
+# make reactives$fitting_done available to ui.R
+output$fitting_done <- reactive({
+    reactives$fitting_done
+})
+
+outputOptions(output, "fitting_done" , suspendWhenHidden = FALSE)
