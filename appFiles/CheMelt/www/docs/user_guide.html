@@ -395,26 +395,49 @@ $$
      and the baseline intercepts and slopes can be either local (different for each curve) or shared (same for all curves).
   </p>
 
-  <p class="vf-intro__text"> 
-    To start with, it is recommended to define a set of candidate models. If the unfolding curves
-    were obtained under the same experimental conditions, such as protein concentration, instrument type,
-    instrument settings (e.g., laser power), etc., it is reasonable to assume that the slope terms are shared among curves.
-    In that case, the intercepts can be also shared or local. The main difference here is that the shared intercepts model 
-    assumes a linear dependence of the signal on denaturant concentration, while the local model does not include this dependence (both models have shared slopes).
-    On the other hand, if the curves were obtained under different experimental conditions, then local intercepts and slopes should be used.  
-  </p>
-
-  <p class="vf-intro__text"> 
-    Once a set of candidate models is defined, we suggest to try different baseline equations.
-    For differential scanning fluorimetry data, we suggest first evaluating linear and exponential baselines for the native state,
-    and exponential (or quadratic) baselines for the unfolded state.
-    For circular dichroism data, we suggest using linear baselines for both the native and unfolded states. 
-    Several options can be compared at the same time by using the 'Compare models' option in the 
-    '2b. Fittings' box.
-  </p>
-
+<p class="vf-intro__text">
+  To begin, we recommend defining a set of candidate models for fitting the unfolding curves.
+</p>
 
 <p class="vf-intro__text">
+  If all curves were collected under the same experimental conditions,
+   such as the same protein concentration, instrument, and instrument settings
+    (for example, laser power), 
+    it is reasonable to assume that the slope terms are shared across curves. 
+    In this case, the intercepts can be either shared or fitted independently for each curve.</p>
+
+<p class="vf-intro__text">
+  The model with shared slopes and local intercepts assumes a linear dependence of the signal on
+   denaturant concentration. 
+   In contrast, the model with shared slopes and shared intercepts does not include this 
+   dependence.</p>
+
+<p class="vf-intro__text">
+  When using the model with shared slopes and shared intercepts, 
+  we recommend enabling the scale factor option. 
+  This helps account for small errors in protein concentration measurements or
+   differences in detection sensitivity between positions.</p>
+
+<p class="vf-intro__text">
+  If the unfolding curves were collected under different experimental conditions, 
+  the baseline parameters should generally be fitted independently. 
+  In this case, use local slopes and local intercepts for each curve.</p>
+
+<p class="vf-intro__text">
+  Once a set of candidate models has been defined, 
+  we suggest trying different baseline equations.</p>
+
+<p class="vf-intro__text">
+  For differential scanning fluorimetry data, 
+  we suggest first evaluating linear and exponential baselines for the native state,
+   and exponential or quadratic baselines for the unfolded state.
+   For circular dichroism data, we suggest using linear baselines 
+   for both the native and unfolded states.
+  </p>
+
+<p class="vf-intro__text">
+  Several options can be compared at the same time by using the "Compare models" option in 
+  the "2b. Fittings" box.
 If the 'Compare models' option is selected, the models are automatically sorted based on the extended Bayesian 
 Information Criterion (eBIC) (with a penalty factor gamma equal to one), 
 and the results of the model with the lowest eBIC are shown. 
@@ -426,8 +449,8 @@ Firstly, the fitted curves should be visually inspected to check that they match
 Secondly, the fitted parameters should be physically reasonable. 
 Thirdly, the predicted stability curve should be consistent with the observed behaviour of the protein. 
 For example, if the protein is known to be stable at room temperature in the absence of denaturant, the predicted stability curve should show a positive free energy of unfolding at these conditions. 
-In case that the fitted model does not meet these criteria, it is recommended to try other models.
 Fourthly, the confidence intervals of the fitted parameters should be calculated to check that they are reasonably narrow.
+In case that the fitted model does not meet these criteria, it is recommended to try other models.
 </p>
 
 
