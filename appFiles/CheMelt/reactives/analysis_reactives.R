@@ -333,8 +333,9 @@ observeEvent(input$btn_call_fit,{
         dg_df <- pandas_to_r(dg_df)
         reactives$dg_df <- dg_df
 
-        reactives$baseline_df <- pySample$baseline_df
-        reactives$baseline_df <- pandas_to_r(reactives$baseline_df)
+        baseline_df <- pandas_to_r(pySample$baseline_df)
+        reactives$baseline_df <- baseline_df
+        reactives$baseline_df_copy <- baseline_df  # Store backup copy
 
         reactives$fitting_done <- TRUE
         popUpSuccess('✅ Fitting completed!')
@@ -637,6 +638,9 @@ observeEvent(input$confirm_model_comparison,{
     pySample <<- best_py_fit_obj 
 
     # We need to predict the baselines, because the compare model function does not apply it
-    pySample$predict_baselines()  
+    pySample$predict_baselines()
+    baseline_df <- pandas_to_r(pySample$baseline_df)
+    reactives$baseline_df <- baseline_df
+    reactives$baseline_df_copy <- baseline_df  
 
 })

@@ -179,32 +179,29 @@ plot_fluo_signal <- function(
 
         if (!is.null(baseline_df)) {
 
-            # Columns are - Temperature, Signal, Baseline_type, Label
-            
-            baseline_df_native <- baseline_df[baseline_df[,3] == "Native" & baseline_df[,4] == current_label, ]
-            baseline_df_unfolded <- baseline_df[baseline_df[,3] == "Unfolded" & baseline_df[,4] == current_label, ]
+          # Columns are - Temperature, Signal, Baseline_type, Label
+          baseline_df_native <- baseline_df[baseline_df[,3] == "Native" & baseline_df[,4] == current_label, ]
+          baseline_df_unfolded <- baseline_df[baseline_df[,3] == "Unfolded" & baseline_df[,4] == current_label, ]
 
-            p <- p %>% add_trace(
-              x = baseline_df_native[,1],
-              y = baseline_df_native[,2],
-              color = I("red"),
-              type = "scatter",
-              mode = "lines",
-              showlegend = FALSE,
-              line = list(width = line_width, dash = "dash")
-            )
+          p <- p %>% add_trace(
+            x = baseline_df_native[,1],
+            y = baseline_df_native[,2],
+            color = I("red"),
+            type = "scatter",
+            mode = "lines",
+            showlegend = FALSE,
+            line = list(width = line_width, dash = "dash")
+          )
 
-            p <- p %>% add_trace(
-              x = baseline_df_unfolded[,1],
-              y = baseline_df_unfolded[,2],
-              color = I("red"),
-              type = "scatter",
-              mode = "lines",
-              showlegend = FALSE,
-              line = list(width = line_width, dash = "dash")
-            )
-
-          }
+          p <- p %>% add_trace(
+            x = baseline_df_unfolded[,1],
+            y = baseline_df_unfolded[,2],
+            color = I("red"),
+            type = "scatter",
+            mode = "lines",
+            showlegend = FALSE,
+            line = list(width = line_width, dash = "dash")
+          )
 
         }
 
@@ -223,7 +220,7 @@ plot_fluo_signal <- function(
             showlegend = FALSE,
             line = list(width = line_width)
           )
-
+        }
       }
 
       groups <- unique(label_data$ID)

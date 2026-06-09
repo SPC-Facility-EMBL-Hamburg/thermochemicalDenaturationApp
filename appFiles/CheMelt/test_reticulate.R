@@ -1,8 +1,9 @@
 gc()
 rm(list=ls())
 library(reticulate)
-
-
+source('./helpers_R/helpers.R')
+source('./helpers_R/plot_helpers.R')
+library(plotly)
 appName     <- "Chemelt"
 user        <- Sys.info()['user']
 
@@ -37,6 +38,11 @@ pySample$reset_fittings_results()
 pySample$n_residues <- 100
 pySample$max_points <- 100
 
+signal_df <- pandas_to_r(pySample$signal_to_df())
+
+fig <- plot_fluo_signal(
+  signal_df              = signal_df
+)
 
 pySample$guess_initial_parameters(
 native_baseline_type     = 'linear',
@@ -46,8 +52,7 @@ window_range_unfolded = 10
 )
 
 
-source('./helpers_R/helpers.R')
-source('./helpers_R/plot_helpers.R')
+
 
 pySample$estimate_baseline_parameters(
     native_baseline_type = 'linear',
@@ -64,7 +69,7 @@ signal_df <- pySample$signal_to_df()
 fitted_df <- pySample$signal_to_df(signal_type = "fitted")
 baseline_df <- pySample$baseline_df
 
-library(plotly)
+
 fig <- plot_fluo_signal(
         signal_df              = signal_df,
         unfolding_fitted_data              = fitted_df,
