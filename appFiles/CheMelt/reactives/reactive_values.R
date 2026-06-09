@@ -4,6 +4,7 @@ reactives <- reactiveValues(
     signal_df = NULL,  # signal data frame
     derivative_df = NULL,  # derivative data frame
     baseline_df = NULL,  # baseline data frame
+    baseline_df_copy = NULL, # copy of the baseline data frame for resetting
     signal_df_fitted = NULL,  # fitted signal data frame
     signal_df_scaled = NULL,  # scaled signal data frame
     signal_df_fitted_scaled = NULL,  # fitted scaled signal data frame
@@ -49,7 +50,8 @@ reactives <- reactiveValues(
     n_xticks_val = 4, # number of ticks on x-axis
     n_yticks_val = 3, # number of ticks on y-axis
     tick_length_val = 8, # tick length
-    tick_width_val = 2 # tick width
+    tick_width_val = 2, # tick width
+    show_baseline_val = TRUE
 )
 
 # make reactives$fitting_done available to ui.R

@@ -237,7 +237,9 @@ observeEvent(list(input$configure_appearance,input$configure_appearance_fit), {
             sliderInput('appearance_line_width', 'Line width',
                 value = reactives$plot_line_width_val, min = 0.5, max = 10, step = 0.5),
             sliderInput('appearance_max_points', 'Max points',
-                value = reactives$max_points_val, min = 100, max = 20000, step = 100)
+                value = reactives$max_points_val, min = 100, max = 20000, step = 100),
+            checkboxInput('appearance_show_baseline', 'Show baseline', 
+            value = isTRUE(reactives$show_baseline_val))
         ),
         size = 'm',
         easyClose = TRUE,
@@ -246,6 +248,18 @@ observeEvent(list(input$configure_appearance,input$configure_appearance_fit), {
         )
     ))
 }, ignoreInit = TRUE)
+
+observeEvent(input$appearance_show_baseline, {
+    reactives$show_baseline_val <- isTRUE(input$appearance_show_baseline)
+
+    if (reactives$show_baseline_val) {
+        if (!is.null(reactives$baseline_df_copy)) {
+            reactives$baseline_df <- reactives$baseline_df_copy
+        }
+    } else {
+        reactives$baseline_df <- NULL
+    }
+})
 
 # Observers to sync appearance inputs into reactives
 observeEvent(input$appearance_marker_size, {
