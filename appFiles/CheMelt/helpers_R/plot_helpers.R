@@ -108,7 +108,8 @@ plot_fluo_signal <- function(
     n_yticks = 6,
     tick_length = 8,
     tick_width = 2,
-    derivative = FALSE) {
+    derivative = FALSE,
+    baseline_df = NULL) {
 
   # Select at most max_points
   n_rows <- nrow(signal_df)
@@ -176,6 +177,37 @@ plot_fluo_signal <- function(
         label_fitted <- unfolding_fitted_data[unfolding_fitted_data$Label == current_label, ]
         groups <- unique(label_data$ID)
 
+        if (!is.null(baseline_df)) {
+
+            # Columns are - Temperature, Signal, Baseline_type, Label
+            
+            baseline_df_native <- baseline_df[baseline_df[,3] == "Native" & baseline_df[,4] == current_label, ]
+            baseline_df_unfolded <- baseline_df[baseline_df[,3] == "Unfolded" & baseline_df[,4] == current_label, ]
+
+            p <- p %>% add_trace(
+              x = baseline_df_native[,1],
+              y = baseline_df_native[,2],
+              color = I("red"),
+              type = "scatter",
+              mode = "lines",
+              showlegend = FALSE,
+              line = list(width = line_width, dash = "dash")
+            )
+
+            p <- p %>% add_trace(
+              x = baseline_df_unfolded[,1],
+              y = baseline_df_unfolded[,2],
+              color = I("red"),
+              type = "scatter",
+              mode = "lines",
+              showlegend = FALSE,
+              line = list(width = line_width, dash = "dash")
+            )
+
+          }
+
+        }
+
         for (j in seq_along(groups)) {
           group <- groups[j]
           group_df <- label_fitted[label_fitted$ID == group, ]
@@ -191,7 +223,7 @@ plot_fluo_signal <- function(
             showlegend = FALSE,
             line = list(width = line_width)
           )
-        }
+
       }
 
       groups <- unique(label_data$ID)

@@ -21,11 +21,11 @@ setwd(base_dir)
 library(tidyverse)
 pyChemelt <- import("pychemelt")
 
-file_example <- "./www/nDSFdemoFile.xlsx"
+file_example <- "./www/20191202_ACBP_15C_95C_processed.xlsx"
 
 pySample <- pyChemelt$Monomer('test')
 pySample$read_multiple_files(file_example)
-pySample$set_signal(list('Ratio'))
+pySample$set_signal(list('330nm','350nm'))
 
 
 pySample$set_denaturant_concentrations()
@@ -47,18 +47,27 @@ window_range_unfolded = 10
 
 
 source('./helpers_R/helpers.R')
+source('./helpers_R/plot_helpers.R')
 
 pySample$estimate_baseline_parameters(
     native_baseline_type = 'linear',
-    unfolded_baseline_type = 'linear',
+    unfolded_baseline_type = 'exponential',
     window_range_native = 10,
     window_range_unfolded = 10
 )
 
 pySample$fit_thermal_unfolding_global()
-pySample$fit_thermal_unfolding_global_global()
-print(pySample$params_df)
+#pySample$fit_thermal_unfolding_global_global()
+print(pySample$baseline_df)
 
-pySample$leave_one_out_cross_validation()
+signal_df <- pySample$signal_to_df()
+fitted_df <- pySample$signal_to_df(signal_type = "fitted")
+baseline_df <- pySample$baseline_df
 
-print(pySample$loo_df)
+library(plotly)
+fig <- plot_fluo_signal(
+        signal_df              = signal_df,
+        unfolding_fitted_data              = fitted_df,
+        baseline_df            = baseline_df)
+
+fig

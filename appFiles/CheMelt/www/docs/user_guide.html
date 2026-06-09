@@ -381,7 +381,7 @@ $$
 </div>
 
 <div class="vf-section-header"><a class="vf-section-header__heading vf-section-header__heading--is-link" href="JavaScript:Void(0);" id="section-link"
-                                  onclick="myFunction('choosingModel')">Choosing a model <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
+                                  onclick="myFunction('choosingModel')">Model selection guidelines <svg aria-hidden="true" class="vf-section-header__icon | vf-icon vf-icon-arrow--inline-end" width="1em" height="1em" xmlns="http://www.w3.org/2000/svg">
       <path d="M0 12c0 6.627 5.373 12 12 12s12-5.373 12-12S18.627 0 12 0C5.376.008.008 5.376 0 12zm13.707-5.209l4.5 4.5a1 1 0 010 1.414l-4.5 4.5a1 1 0 01-1.414-1.414l2.366-2.367a.25.25 0 00-.177-.424H6a1 1 0 010-2h8.482a.25.25 0 00.177-.427l-2.366-2.368a1 1 0 011.414-1.414z" fill="" fill-rule="nonzero"></path>
     </svg></a></div>
 
@@ -389,150 +389,58 @@ $$
 
  <p class="vf-intro__text">
     There are several options to fit the unfolding data,
-     depending on the number of parameters for the baselines
+     depending on the baseline equations
      and if the baseline parameters are shared or local.
-     Ideally, one should choose the model with the least number of parameters
-     that is still able to explain the observed data.
-     For example, for <b>ten</b> denaturant concentrations these are the number of
-     parameters:
+     Briefly, the baselines can be modelled with constant, linear, quadratic or exponential functions,
+     and the baseline intercepts and slopes can be either local (different for each curve) or shared (same for all curves).
   </p>
 
-  <p class="vf-intro__text"></p>
+  <p class="vf-intro__text"> 
+    To start with, it is recommended to define a set of candidate models. If the unfolding curves
+    were obtained under the same experimental conditions, such as protein concentration, instrument type,
+    instrument settings (e.g., laser power), etc., it is reasonable to assume that the slope terms are shared among curves.
+    In that case, the intercepts can be also shared or local. The main difference here is that the shared intercepts model 
+    assumes a linear dependence of the signal on denaturant concentration, while the local model does not include this dependence (both models have shared slopes).
+    On the other hand, if the curves were obtained under different experimental conditions, then local intercepts and slopes should be used.  
+  </p>
 
-<table class="vf-table">
-  <thead class="vf-table__body">
-    <tr class="vf-table__row">
-      <th class="vf-table__heading" scope="col">Baseline type  </th>
-      <th class="vf-table__heading" scope="col">Local intercepts and local slopes  </th>
-      <th class="vf-table__heading" scope="col">Local intercepts and global slopes  </th>
-      <th class="vf-table__heading" scope="col">Global intercepts and global slopes  </th>
-      <th class="vf-table__heading" scope="col">Global intercepts and global slopes with scaling factor  </th>
-    </tr>
-  </thead>
+  <p class="vf-intro__text"> 
+    Once a set of candidate models is defined, we suggest to try different baseline equations.
+    For differential scanning fluorimetry data, we suggest first evaluating linear and exponential baselines for the native state,
+    and exponential (or quadratic) baselines for the unfolded state.
+    For circular dichroism data, we suggest using linear baselines for both the native and unfolded states. 
+    Several options can be compared at the same time by using the 'Compare models' option in the 
+    '2b. Fittings' box.
+  </p>
 
-  <tbody class="vf-table__body">
-    <tr class="vf-table__row">
-      <td class="vf-table__heading">Constant<sub>native</sub> and Constant<sub>unfolded</sub></td>
-      <td class="vf-table__cell">24</td>
-      <td class="vf-table__cell">24 (no slopes)</td>
-      <td class="vf-table__cell">8 (no slopes)</td>
-      <td class="vf-table__cell">Between 8 and 17 (no slopes)</td>
-    </tr>
 
-    <tr class="vf-table__row">
-      <td class="vf-table__heading">Constant<sub>native</sub> and Linear<sub>unfolded</sub></td>
-      <td class="vf-table__cell">34</td>
-      <td class="vf-table__cell">25</td>
-      <td class="vf-table__cell">9</td>
-      <td class="vf-table__cell">Between 9 and 18</td>
-    </tr>
-
-    <tr class="vf-table__row">
-      <td class="vf-table__heading">Constant<sub>native</sub> and Quadratic<sub>unfolded</sub></td>
-      <td class="vf-table__cell">44</td>
-      <td class="vf-table__cell">26</td>
-      <td class="vf-table__cell">10</td>
-      <td class="vf-table__cell">Between 10 and 19</td>
-    </tr>
-
-      <tr class="vf-table__row">
-      <td class="vf-table__heading">Linear<sub>native</sub> and Constant<sub>unfolded</sub></td>
-      <td class="vf-table__cell">34</td>
-      <td class="vf-table__cell">25</td>
-      <td class="vf-table__cell">9</td>
-      <td class="vf-table__cell">Between 9 and 18</td>
-    </tr>
-
-      <tr class="vf-table__row">
-      <td class="vf-table__heading">Linear<sub>native</sub> and Linear<sub>unfolded</sub></td>
-      <td class="vf-table__cell">44</td>
-      <td class="vf-table__cell">26</td>
-      <td class="vf-table__cell">10</td>
-      <td class="vf-table__cell">Between 10 and 19</td>
-    </tr>
-
-        <tr class="vf-table__row">
-      <td class="vf-table__heading">Linear<sub>native</sub> and Quadratic<sub>unfolded</sub></td>
-      <td class="vf-table__cell">54</td>
-      <td class="vf-table__cell">27</td>
-      <td class="vf-table__cell">11</td>
-      <td class="vf-table__cell">Between 11 and 20</td>
-    </tr>
-
-          <tr class="vf-table__row">
-      <td class="vf-table__heading">Quadratic<sub>native</sub> and Constant<sub>unfolded</sub></td>
-      <td class="vf-table__cell">44</td>
-      <td class="vf-table__cell">26</td>
-      <td class="vf-table__cell">10</td>
-      <td class="vf-table__cell">Between 10 and 19</td>
-    </tr>
-
-          <tr class="vf-table__row">
-      <td class="vf-table__heading">Quadratic<sub>native</sub> and Linear<sub>unfolded</sub></td>
-      <td class="vf-table__cell">54</td>
-      <td class="vf-table__cell">27</td>
-      <td class="vf-table__cell">11</td>
-      <td class="vf-table__cell">Between 11 and 20</td>
-    </tr>
-
-          <tr class="vf-table__row">
-      <td class="vf-table__heading">Quadratic<sub>native</sub> and Quadratic<sub>unfolded</sub></td>
-      <td class="vf-table__cell">64</td>
-      <td class="vf-table__cell">28</td>
-      <td class="vf-table__cell">12</td>
-      <td class="vf-table__cell">Between 12 and 21</td>
-    </tr>
-
-  </tbody>
-</table>
-
-<br>
 <p class="vf-intro__text">
-Therefore, fittings with global intercepts and slopes, and no scaling factors are preferred.
-If that model fails to fit the data, one should try first using the scaling factor,
-that takes into account protein concentration errors or
-differences in detection sensitivity across positions.
-Another recommendation to reduce the number of parameters is to restrict the temperature range of analysis
-such that the baseline terms can be well approximated by a linear (or constant) function.
+If the 'Compare models' option is selected, the models are automatically sorted based on the extended Bayesian 
+Information Criterion (eBIC) (with a penalty factor gamma equal to one), 
+and the results of the model with the lowest eBIC are shown. 
 </p>
 
 <p class="vf-intro__text">
-Furthermore, fitting thermochemical denaturation data is an ill-posed problem, and
-different sets of parameters can fit the data. If the obtained parameters do not make
-biophysical sense, such as a heat capacity of unfolding of 0.1 kcal/K/mol,
-for a protein of 130 residues, then another model should be used.
+After the fitting is finished, the fitted model must be assessed in four ways. 
+Firstly, the fitted curves should be visually inspected to check that they match the data well.
+Secondly, the fitted parameters should be physically reasonable. 
+Thirdly, the predicted stability curve should be consistent with the observed behaviour of the protein. 
+For example, if the protein is known to be stable at room temperature in the absence of denaturant, the predicted stability curve should show a positive free energy of unfolding at these conditions. 
+In case that the fitted model does not meet these criteria, it is recommended to try other models.
+Fourthly, the confidence intervals of the fitted parameters should be calculated to check that they are reasonably narrow.
 </p>
 
+
+<p class="vf-intro__text"><b>Note:</b>
+It is important to keep in mind that the fit statistics such as the
+Akaike Information Criterion (AIC) or the Bayesian Information Criterion (BIC) 
+can only be used to compare models fitted to the exact same dataset. 
+The difference between AIC and BIC is that BIC has a stronger penalty for the number of parameters.
+Then, the extended Bayesian Information Criterion (eBIC) includes an additional penalty factor gamma that further penalizes the number of parameters.
+Moreover, the statistical criteria are influenced by the total number of data points (n),
+implying that given a sufficiently large "n", the criteria will tend to favour more complex models,
+even if the improvement in the fitting is not significant. 
 </p>
-
-<style>
-/* Make space between columns */
-.vf-table {
-  border-collapse: separate;       /* allow spacing */
-  border-spacing: 1rem 0;          /* horizontal = 1rem, vertical = 0 */
-}
-
-/* Increase vertical spacing and add horizontal padding */
-.vf-table th,
-.vf-table td {
-  padding-top: 1rem;     /* space above */
-  padding-bottom: 1rem;  /* space below */
-  padding-left: 1rem;    /* space left */
-  padding-right: 1rem;   /* space right */
-  line-height: 1.5;      /* makes subscripts/superscripts more readable */
-}
-
-/* Add a line after the first row (header) */
-.vf-table thead tr th {
-  border-bottom: 2px solid #000; /* thick black line */
-}
-
-/* Add a line after the first column */
-.vf-table td:first-child,
-.vf-table th:first-child {
-  border-right: 2px solid #000;
-}
-</style>
 
 </div>
 

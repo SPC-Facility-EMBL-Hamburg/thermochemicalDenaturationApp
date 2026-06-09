@@ -422,7 +422,8 @@ output$fitted_signal <- renderPlotly({
         n_xticks                = reactives$n_xticks_val,
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
-        tick_width              = reactives$tick_width_val
+        tick_width              = reactives$tick_width_val,
+        baseline_df             = reactives$baseline_df
         )
 
     return(fig)
@@ -455,7 +456,8 @@ output$fitted_signal_rescaled <- renderPlotly({
         n_xticks                = reactives$n_xticks_val,
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
-        tick_width              = reactives$tick_width_val
+        tick_width              = reactives$tick_width_val,
+        baseline_df             = reactives$baseline_df
         )
 
     return(fig)

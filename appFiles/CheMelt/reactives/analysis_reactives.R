@@ -12,6 +12,15 @@ observeEvent(input$btn_call_fit,{
 
     unfolding_model <- input$unfolding_model
 
+    # If the user wants to compare models and the subset option is not selected return a warning
+    if (unfolding_model == "compare-many-models" & !input$fit_subset) {
+        popUpWarning(
+            "⚠ Warning: The comparison of models can take a long time if the fitting is performed on the whole dataset. 
+            Please use the comparison of models on a subset of the data to find the best model and then fit the whole dataset with the selected model."
+        )
+        return(NULL)
+    }
+
     fixed_cp <- input$fix_cp_option == 'fix_cp'
 
     reactives$fitting_done <- FALSE
@@ -34,6 +43,7 @@ observeEvent(input$btn_call_fit,{
 
     reactives$signal_df_fitted <- NULL
     output$fitted_params       <- NULL
+    reactives$baseline_df      <- NULL
 
     # Do a prefit if the user wants to fit the whole dataset (and not a subset)
     pySample$pre_fit <- !input$fit_subset
@@ -319,9 +329,12 @@ observeEvent(input$btn_call_fit,{
             fitted_parameters
         },digits=4)
 
-       dg_df <- pySample$dg_df
-       dg_df <- pandas_to_r(dg_df)
-       reactives$dg_df <- dg_df
+        dg_df <- pySample$dg_df
+        dg_df <- pandas_to_r(dg_df)
+        reactives$dg_df <- dg_df
+
+        reactives$baseline_df <- pySample$baseline_df
+        reactives$baseline_df <- pandas_to_r(reactives$baseline_df)
 
         reactives$fitting_done <- TRUE
         popUpSuccess('✅ Fitting completed!')
@@ -364,6 +377,8 @@ observeEvent(input$btn_cal_conf_interval,{
 })
 
 observeEvent(input$confirm_conf_interval_calculation,{
+
+    removeModal()
 
     withBusyIndicatorServer("Go2",{
 
@@ -619,6 +634,9 @@ observeEvent(input$confirm_model_comparison,{
     # Set pySample to be the best fit object - so the user can compute confidence intervals
     
     # Caution - we are changing the global pySample object to be the best fit model
-    pySample <<- best_py_fit_obj   
+    pySample <<- best_py_fit_obj 
+
+    # We need to predict the baselines, because the compare model function does not apply it
+    pySample$predict_baselines()  
 
 })

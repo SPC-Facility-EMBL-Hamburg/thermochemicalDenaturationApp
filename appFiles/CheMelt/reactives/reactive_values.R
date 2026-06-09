@@ -3,6 +3,7 @@ reactives <- reactiveValues(
     update_plots = NULL,  # show plots/tables
     signal_df = NULL,  # signal data frame
     derivative_df = NULL,  # derivative data frame
+    baseline_df = NULL,  # baseline data frame
     signal_df_fitted = NULL,  # fitted signal data frame
     signal_df_scaled = NULL,  # scaled signal data frame
     signal_df_fitted_scaled = NULL,  # fitted scaled signal data frame
