@@ -109,7 +109,8 @@ plot_fluo_signal <- function(
     tick_length = 8,
     tick_width = 2,
     derivative = FALSE,
-    baseline_df = NULL) {
+    baseline_df = NULL,
+    temp_units_str = "°C") {
 
   # Select at most max_points
   n_rows <- nrow(signal_df)
@@ -129,7 +130,7 @@ plot_fluo_signal <- function(
 
   signal_df$Denaturant <- signif(signal_df$Denaturant, 3)
 
-  x_axis_label <- "Temperature (ºC)"
+  x_axis_label <- paste0("Temperature (", temp_units_str, ")")
 
   min_x <- min(signal_df$Temperature) - 5
   max_x <- max(signal_df$Temperature) + 5
@@ -387,7 +388,8 @@ plot_fluo_signal_residuals <- function(
     n_xticks = 6,
     n_yticks = 6,
     tick_length = 8,
-    tick_width = 2) {
+    tick_width = 2,
+    temp_units_str = "°C") {
 
   if (is.null(unfolding_fitted_data)) {
     stop("`unfolding_fitted_data` must be provided to compute residuals.")
@@ -405,7 +407,7 @@ plot_fluo_signal_residuals <- function(
 
   signal_df$Denaturant <- signif(signal_df$Denaturant, 3)
 
-  x_axis_label <- "Temperature (ºC)"
+  x_axis_label <- paste0("Temperature (", temp_units_str, ")")
 
   min_x <- min(signal_df$Temperature) - 5
   max_x <- max(signal_df$Temperature) + 5
@@ -896,7 +898,8 @@ plot_fits_and_residuals <- function(
     n_xticks = 6,
     n_yticks = 6,
     tick_length = 8,
-    tick_width = 2
+    tick_width = 2,
+    temp_units_str = "°C"
 ) {
 
     n_rows <- nrow(signal_df)
@@ -916,7 +919,7 @@ plot_fits_and_residuals <- function(
     # ----------------------------
     # X axis configuration
     # ----------------------------
-    x_axis_label <- "Temperature (ºC)"
+    x_axis_label <- paste0("Temperature (", temp_units_str, ")")
     min_x <- min(signal_df$Temperature) - 5
     max_x <- max(signal_df$Temperature) + 5
     xticks_pos <- nice_temperature_ticks_05(min_x + 5, max_x - 5, n_ticks = n_xticks)

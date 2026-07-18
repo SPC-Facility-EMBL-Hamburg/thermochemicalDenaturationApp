@@ -107,7 +107,9 @@ observeEvent(input$btn_call_fit,{
 
         pySample$n_residues <- input$n_residues
 
-        if (reactives$find_initial_params) {
+       
+
+        if (reactives$calculate_init_params && reactives$find_initial_params) {
         # Use a simple model to guess good initial thermodynamic parameters
 
               pySample$guess_initial_parameters(
@@ -166,6 +168,44 @@ observeEvent(input$btn_call_fit,{
         reactives$user_tm_limits <- user_tm_limits
         reactives$cp_value <- cp_value
 
+        pySample$estimate_baseline_parameters(
+            native_baseline_type    = native_baseline_type,
+            unfolded_baseline_type  = unfolded_baseline_type,
+            window_range_native     = input$baseline_window_native,
+            window_range_unfolded   = input$baseline_window_unfolded
+        )
+
+    if (!reactives$calculate_init_params) {
+
+            pySample$guess_Cp()
+
+            write_logbook(
+                paste0(
+                    "User provided initial guess for the fitting parameters:
+                    Tm: ",reactives$tm_value_guess,
+                    ", ΔH: ",reactives$dh_value_guess,
+                    ", Cp: ",reactives$cp_value_guess,
+                    ", m: ",reactives$m_value_guess
+                )
+            )
+
+            user_thermodynamic_params_guess = c(
+                reactives$tm_value_guess,
+                reactives$dh_value_guess,
+                reactives$cp_value_guess,
+                reactives$m_value_guess
+            )
+
+            pySample$set_thermodynamic_params_guess(
+                user_thermodynamic_params_guess = user_thermodynamic_params_guess,
+                cp_limits = user_cp_limits,
+                dh_limits = user_dh_limits,
+                tm_limits = user_tm_limits,
+                cp_value = cp_value
+            )
+
+        }
+
         # Compare models if the user selected the option to compare models
         if (unfolding_model == "compare-many-models") {
 
@@ -213,20 +253,13 @@ observeEvent(input$btn_call_fit,{
             return(NULL)
         }
 
-        pySample$estimate_baseline_parameters(
-            native_baseline_type    = native_baseline_type,
-            unfolded_baseline_type  = unfolded_baseline_type,
-            window_range_native     = input$baseline_window_native,
-            window_range_unfolded   = input$baseline_window_unfolded
-        )
-
         pySample$fit_thermal_unfolding_global(
             cp_limits = user_cp_limits,
             dh_limits = user_dh_limits,
             tm_limits = user_tm_limits,
-            cp_value = cp_value
+            cp_value = cp_value,
+            set_init_params = reactives$calculate_init_params
         )
-
 
         condition <- unfolding_model %in% c("global-global-local", "global-global-global")
 
@@ -513,7 +546,8 @@ observeEvent(input$confirm_model_comparison,{
             cp_limits = reactives$user_cp_limits,
             dh_limits = reactives$user_dh_limits,
             tm_limits = reactives$user_tm_limits,
-            cp_value = reactives$cp_value
+            cp_value = reactives$cp_value,
+            set_init_params = reactives$calculate_init_params
         )
 
     })

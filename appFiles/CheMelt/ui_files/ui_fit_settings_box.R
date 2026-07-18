@@ -4,7 +4,7 @@ box(title = "2a. Settings", width = 6, solidHeader = T, status = "primary",
 
         # Temperature window for baseline estimation, slider between 5 and 30, only one value is selected
         column(6, p(
-            HTML("<b>Window for baseline estimation (ºC) - Native</b>"),
+            HTML("<b>Window for baseline estimation - Native</b>"),
             span(shiny::icon("info-circle"), id = "info_uu-baseline_window_native"),
             sliderInput("baseline_window_native", NULL, min = 5, max = 20, value = c(5, 10)),
             tippy::tippy_this(
@@ -16,7 +16,7 @@ box(title = "2a. Settings", width = 6, solidHeader = T, status = "primary",
 
         # Temperature window for baseline estimation, slider between 5 and 30, only one value is selected
         column(6, p(
-            HTML("<b>Window for baseline estimation (ºC) - Unfolded</b>"),
+            HTML("<b>Window for baseline estimation - Unfolded</b>"),
             span(shiny::icon("info-circle"), id = "info_uu-baseline_window_unfolded"),
             sliderInput("baseline_window_unfolded", NULL, min = 5, max = 20, value = c(15, 20)),
             tippy::tippy_this(

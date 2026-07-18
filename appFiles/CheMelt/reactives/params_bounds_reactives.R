@@ -111,7 +111,7 @@ observeEvent(input$show_advanced_options_fit,{
                         condition = "input.fix_tm_option == 'set_tm_bounds'",
 
                         column(6, p(
-                          HTML("<b>T<sub>m</sub> lower limit (ºC)</b>"),
+                          HTML("<b>T<sub>m</sub> lower limit</b>"),
                           span(shiny::icon("info-circle"), id = "info_uu-tm_lower_limit"),
                           numericInput("tm_lower_limit", NULL, value = reactives$tm_low_bound, step = 1),
                           tippy::tippy_this(
@@ -123,7 +123,7 @@ observeEvent(input$show_advanced_options_fit,{
 
                         # Numeric input - Tm upper limit
                         column(6, p(
-                          HTML("<b>T<sub>m</sub> upper limit (ºC)</b>"),
+                          HTML("<b>T<sub>m</sub> upper limit</b>"),
                           span(shiny::icon("info-circle"), id = "info_uu-tm_upper_limit"),
                           numericInput("tm_upper_limit", NULL, value = reactives$tm_upp_bound, step = 1),
                           tippy::tippy_this(
@@ -143,7 +143,7 @@ observeEvent(input$show_advanced_options_fit,{
 
                 column(
                     width = 4,
-                    p(HTML("<b>ΔH</b>"),
+                    p(HTML("<b>ΔHm</b>"),
                         span(shiny::icon("info-circle"), id = "info_uuL-3"),
 
                         selectInput("fix_dh_option", NULL,
@@ -170,7 +170,7 @@ observeEvent(input$show_advanced_options_fit,{
                         condition = "input.fix_dh_option == 'set_dh_bounds'",
 
                         column(6, p(
-                          HTML("<b>ΔH lower limit</b>"),
+                          HTML("<b>ΔHm lower limit</b>"),
                           span(shiny::icon("info-circle"), id = "info_uu-dh_lower_limit"),
                           numericInput("dh_lower_limit", NULL, value = reactives$dh_low_bound, step = 10),
                           tippy::tippy_this(
@@ -183,7 +183,7 @@ observeEvent(input$show_advanced_options_fit,{
 
                         # Numeric input - DH upper limit
                         column(6, p(
-                          HTML("<b>ΔH upper limit</b>"),
+                          HTML("<b>ΔHm upper limit</b>"),
                           span(shiny::icon("info-circle"), id = "info_uu-dh_upper_limit"),
                           numericInput("dh_upper_limit", NULL, value = reactives$dh_upp_bound, step = 10),
                           tippy::tippy_this(
@@ -197,6 +197,71 @@ observeEvent(input$show_advanced_options_fit,{
                     )
 
                 )
+            ),
+
+            fluidRow(
+
+                column(
+                    width = 8,
+
+                        column(6, p(
+                          HTML("<b>Provide initial guess</b>"),
+                          span(shiny::icon("info-circle"), id = "info_uu-initial_guess"),
+                          checkboxInput("provide_initial_guess", NULL, value = !reactives$calculate_init_params),
+                          tippy::tippy_this(
+                            elementId = "info_uu-initial_guess",
+                            tooltip = "Provide an initial guess for the fitting algorithm.
+                            If this option is not selected, CheMelt will automatically estimate initial values for the fitting parameters.",
+                            placement = "right")
+                        ))
+
+                ),
+
+                conditionalPanel(
+                    condition = "input.provide_initial_guess",
+
+                    column(6, p(
+                      HTML("<b>ΔC<sub>p</sub> initial guess</b>"),
+                      span(shiny::icon("info-circle"), id = "info_uu-cp_initial_guess"),
+                      numericInput("cp_initial_guess", NULL, value = reactives$cp_value_guess, step = 0.1),
+                      tippy::tippy_this(
+                        elementId = "info_uu-cp_initial_guess",
+                        tooltip = "Provide an initial guess for the heat capacity change (ΔCp) during fitting.",
+                        placement = "right")
+                    )),
+
+                    column(6, p(
+                      HTML("<b>T<sub>m</sub> initial guess</b>"),
+                      span(shiny::icon("info-circle"), id = "info_uu-tm_initial_guess"),
+                      numericInput("tm_initial_guess", NULL, value = reactives$tm_value_guess, step = 1),
+                      tippy::tippy_this(
+                        elementId = "info_uu-tm_initial_guess",
+                        tooltip = "Provide an initial guess for the melting temperature (Tm) during fitting.",
+                        placement = "right")
+                    )),
+
+                    column(6, p(
+                      HTML("<b>ΔHm initial guess</b>"),
+                      span(shiny::icon("info-circle"), id = "info_uu-dh_initial_guess"),
+                      numericInput("dh_initial_guess", NULL, value = reactives$dh_value_guess, step = 10),
+                      tippy::tippy_this(
+                        elementId = "info_uu-dh_initial_guess",
+                        tooltip = "Provide an initial guess for the enthalpy change (ΔHm) during fitting.",
+                        placement = "right")
+                    )),
+
+                    # M-value initial guess
+                    column(6, p(
+                      HTML("<b>M-value initial guess</b>"),
+                      span(shiny::icon("info-circle"), id = "info_uu-m_initial_guess"),
+                      numericInput("m_initial_guess", NULL, value = reactives$m_value_guess, step = 0.1),
+                      tippy::tippy_this(
+                        elementId = "info_uu-m_initial_guess",
+                        tooltip = "Provide an initial guess for the m-value during fitting.",
+                        placement = "right")
+                    ))
+
+                )
 
             ),
 
@@ -207,6 +272,26 @@ observeEvent(input$show_advanced_options_fit,{
         )
     )
 
+})
+
+observeEvent(input$provide_initial_guess, {
+    reactives$calculate_init_params <- !input$provide_initial_guess
+})
+
+observeEvent(input$cp_initial_guess, {
+    reactives$cp_value_guess <- input$cp_initial_guess
+})
+
+observeEvent(input$tm_initial_guess, {
+    reactives$tm_value_guess <- input$tm_initial_guess
+})
+
+observeEvent(input$dh_initial_guess, {
+    reactives$dh_value_guess <- input$dh_initial_guess
+})
+
+observeEvent(input$m_initial_guess, {
+    reactives$m_value_guess <- input$m_initial_guess
 })
 
 observeEvent(input$fix_cp_option, {
@@ -235,6 +320,10 @@ observeEvent(input$cp_lower_limit, {
 
 observeEvent(input$tm_upper_limit, {
     reactives$tm_upp_bound <- input$tm_upper_limit
+})
+
+observeEvent(input$tm_lower_limit, {
+    reactives$tm_low_bound <- input$tm_lower_limit
 })
 
 observeEvent(input$fix_dh_option, {

@@ -40,6 +40,8 @@ observeEvent(input$dsf_input_files, {
 
         updateSelectInput(session, "which", choices  = pySample$signals,selected = pySample$signals[1])
         
+        updateCheckboxInput(session, "use_SI_units", value = FALSE)
+
         pySample$set_signal(pySample$signals[1])
 
         # Find max and min temperature
@@ -67,6 +69,8 @@ observeEvent(input$dsf_input_files, {
         output$table1 <- tables[[1]]
 
         pySample$set_denaturant_concentrations()
+        pySample$set_units('kcal')
+        
         pySample$select_conditions(normalise_to_global_max=input$rescale)
         pySample$estimate_derivative()
         pySample$guess_Tm()
@@ -77,12 +81,13 @@ observeEvent(input$dsf_input_files, {
         reactives$update_plots <- TRUE
         reactives$signal_df_fitted <- NULL
         reactives$find_initial_params <- TRUE
+        reactives$data_available <- TRUE
 
     })
 })
 
 
-observeEvent(list(input$which,input$rescale,input$sg_range), {
+observeEvent(list(input$which,input$rescale,input$sg_range, input$use_SI_units), {
 
     req(reactives$update_plots)
     req(input$table1)
@@ -90,6 +95,8 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
     req(input$sg_range)
     req(length(input$sg_range) == 2)
     reactives$update_plots <- NULL
+
+    if (reactives$ignore_sg_range) return(NULL)
 
     pySample$set_signal(input$which)
 
@@ -100,6 +107,12 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
         input$table1,input$table2,input$table3,input$table4,
         pySample$conditions,reactives$n_rows_conditions_table)
 
+    if (input$use_SI_units) {
+        pySample$set_units('international')
+    } else {
+        pySample$set_units('kcal')
+    }
+ 
     pySample$select_conditions(include_and_conc_vectors$include_vector,normalise_to_global_max=input$rescale)
     pySample$set_temperature_range(input$sg_range[1], input$sg_range[2])
 
@@ -113,10 +126,22 @@ observeEvent(list(input$which,input$rescale,input$sg_range), {
     write_logbook(logbook_txt,include_time = FALSE)
 
     # Update the slider input for the native baseline estimation
-    updateSliderInput(session, "baseline_window_native", min = input$sg_range[1], max = input$sg_range[1]+25, value = c(input$sg_range[1], input$sg_range[1]+10))
+    updateSliderInput(
+        session, 
+        "baseline_window_native", 
+        min = floor(input$sg_range[1]), 
+        max = ceiling(input$sg_range[1]+25), 
+        value = c(input$sg_range[1], input$sg_range[1]+10)
+    )
 
     # Update the slider input for the unfolded baseline estimation
-    updateSliderInput(session, "baseline_window_unfolded", min = input$sg_range[2]-25, max = input$sg_range[2], value = c(input$sg_range[2]-10, input$sg_range[2]))
+    updateSliderInput(
+        session,
+         "baseline_window_unfolded",
+        min = floor(input$sg_range[2]-25), 
+        max = ceiling(input$sg_range[2]), 
+        value = c(input$sg_range[2]-10, input$sg_range[2])
+    )
 
     pySample$estimate_derivative()
     pySample$guess_Tm()
@@ -172,6 +197,12 @@ observeEvent(list(input$table1,input$table2,input$table3,input$table4), {
     logbook_txt <- paste0("Denaturant concentrations set to: ",paste(include_and_conc_vectors$concentration_vector, collapse = ", "))
     write_logbook(logbook_txt,include_time = FALSE)
 
+    if (input$use_SI_units) {
+        pySample$set_units('international')
+    } else {
+        pySample$set_units('kcal')
+    }
+
     pySample$select_conditions(include_and_conc_vectors$include_vector,normalise_to_global_max=input$rescale)
 
     logbook_txt <- paste0("Selecting conditions: ",paste(which(include_and_conc_vectors$include_vector), collapse = ", "))
@@ -189,3 +220,70 @@ observeEvent(list(input$table1,input$table2,input$table3,input$table4), {
     reactives$find_initial_params <- TRUE
 
 })
+
+observeEvent(input$use_SI_units, {
+
+  req(reactives$data_available)
+  reactives$ignore_sg_range <- TRUE
+  on.exit(reactives$ignore_sg_range <- FALSE, add = TRUE)
+
+  reactives$temp_units_str <- if (input$use_SI_units) "K" else "°C"
+
+  if (input$use_SI_units) {
+    pySample$set_units("international")
+    left_value_temp  <- (pyChemelt$utils$math$temperature_to_kelvin(input$sg_range[1]))
+    right_value_temp <- (pyChemelt$utils$math$temperature_to_kelvin(input$sg_range[2]))
+
+    reactives$tm_low_bound <- reactives$tm_low_bound + 273.15
+    reactives$tm_upp_bound <- reactives$tm_upp_bound + 273.15
+
+    reactives$dh_low_bound <- reactives$dh_low_bound * 4.184
+    reactives$dh_upp_bound <- reactives$dh_upp_bound * 4.184
+
+    reactives$cp_low_bound <- reactives$cp_low_bound * 4.184
+    reactives$cp_upp_bound <- reactives$cp_upp_bound * 4.184
+
+    reactives$tm_value_guess <- reactives$tm_value_guess + 273.15
+    reactives$dh_value_guess <- reactives$dh_value_guess * 4.184
+    reactives$cp_value_guess <- reactives$cp_value_guess * 4.184
+    reactives$m_value_guess <- reactives$m_value_guess * 4.184
+
+    if (!is.null(reactives$cp_value)) {
+      reactives$cp_value <- reactives$cp_value * 4.184
+    }
+
+
+  } else {
+    pySample$set_units("kcal")
+    left_value_temp  <- (pyChemelt$utils$math$temperature_to_celsius(input$sg_range[1]))
+    right_value_temp <- (pyChemelt$utils$math$temperature_to_celsius(input$sg_range[2]))
+
+    reactives$tm_low_bound <- reactives$tm_low_bound - 273.15
+    reactives$tm_upp_bound <- reactives$tm_upp_bound - 273.15
+
+    reactives$dh_low_bound <- reactives$dh_low_bound / 4.184
+    reactives$dh_upp_bound <- reactives$dh_upp_bound / 4.184
+
+    reactives$cp_low_bound <- reactives$cp_low_bound / 4.184
+    reactives$cp_upp_bound <- reactives$cp_upp_bound / 4.184
+
+    reactives$tm_value_guess <- reactives$tm_value_guess - 273.15
+    reactives$dh_value_guess <- reactives$dh_value_guess / 4.184
+    reactives$cp_value_guess <- reactives$cp_value_guess / 4.184
+    reactives$m_value_guess <- reactives$m_value_guess / 4.184
+
+    if (!is.null(reactives$cp_value)) {
+      reactives$cp_value <- reactives$cp_value / 4.184
+    }
+
+  }
+
+  updateSliderInput(
+    session,
+    "sg_range",
+    min = floor(min(pySample$global_min_temp,left_value_temp)),
+    max = ceiling(max(pySample$global_max_temp,right_value_temp)),
+    value = c(left_value_temp, right_value_temp)
+  )
+
+},ignoreInit = TRUE)

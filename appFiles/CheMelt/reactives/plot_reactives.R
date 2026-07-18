@@ -318,7 +318,8 @@ output$signal <- renderPlotly({
         n_xticks                = reactives$n_xticks_val,
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
-        tick_width              = reactives$tick_width_val
+        tick_width              = reactives$tick_width_val,
+        temp_units_str          = reactives$temp_units_str
         )
   
     return(fig)
@@ -351,7 +352,8 @@ output$first_der <- renderPlotly({
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
         tick_width              = reactives$tick_width_val,
-        derivative              = TRUE
+        derivative              = TRUE,
+        temp_units_str          = reactives$temp_units_str
         )
 
     return(fig)
@@ -363,7 +365,11 @@ output$tm_vs_den <- renderPlotly({
     req(reactives$update_plots)
 
     # Create y-labels by combining base text with signal names
-    y_labels <- paste0("T<sub>m</sub> (°C) / 1st deriv. - ", pySample$signal_names)
+    y_labels <- paste0(
+        "T<sub>m</sub> (", 
+        reactives$temp_units_str,
+        ") / 1st deriv. - ", 
+        pySample$signal_names)
 
     fig <- plot_2d(
         df                      = pySample$t_melting_df_multiple,
@@ -437,7 +443,8 @@ output$fitted_signal <- renderPlotly({
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
         tick_width              = reactives$tick_width_val,
-        baseline_df             = reactives$baseline_df
+        baseline_df             = reactives$baseline_df,
+        temp_units_str          = reactives$temp_units_str
         )
 
     return(fig)
@@ -471,7 +478,8 @@ output$fitted_signal_rescaled <- renderPlotly({
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
         tick_width              = reactives$tick_width_val,
-        baseline_df             = reactives$baseline_df
+        baseline_df             = reactives$baseline_df,
+        temp_units_str          = reactives$temp_units_strplot_fluo_signal
         )
 
     return(fig)
@@ -497,8 +505,8 @@ output$dg_vs_temp <- renderPlotly({
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
         tick_width              = reactives$tick_width_val,
-        x_label                 = "Temperature (°C)",
-        y_label                 = "ΔG (kcal/mol)",
+        x_label                 = paste0("Temperature (", reactives$temp_units_str, ")"),
+        y_label                 = paste0("ΔG (",pySample$energy_units_str,"/mol)"),
         filename                = "dg_vs_temp",
         y_zeroline              = TRUE,
         y_zeroline_color        = "gray",
@@ -536,7 +544,8 @@ output$fitted_signal_residuals <- renderPlotly({
         n_xticks                = reactives$n_xticks_val,
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
-        tick_width              = reactives$tick_width_val
+        tick_width              = reactives$tick_width_val,
+        temp_units_str          = reactives$temp_units_str
         )
 
     return(fig)
@@ -570,7 +579,8 @@ output$fitted_signal_and_residuals <- renderPlotly({
         n_xticks                = reactives$n_xticks_val,
         n_yticks                = reactives$n_yticks_val,
         tick_length             = reactives$tick_length_val,
-        tick_width              = reactives$tick_width_val
+        tick_width              = reactives$tick_width_val,
+        temp_units_str          = reactives$temp_units_str
         )
 
     return(fig)

@@ -26,7 +26,7 @@ file_example <- "./www/20191202_ACBP_15C_95C_processed.xlsx"
 
 pySample <- pyChemelt$Monomer('test')
 pySample$read_multiple_files(file_example)
-pySample$set_signal(list('330nm','350nm'))
+pySample$set_signal(list('350nm'))
 
 
 pySample$set_denaturant_concentrations()
@@ -44,35 +44,40 @@ fig <- plot_fluo_signal(
   signal_df              = signal_df
 )
 
-pySample$guess_initial_parameters(
-native_baseline_type     = 'linear',
-unfolded_baseline_type   = 'linear',
-window_range_native = 10,
-window_range_unfolded = 10
-)
-
-
-
 
 pySample$estimate_baseline_parameters(
     native_baseline_type = 'linear',
     unfolded_baseline_type = 'exponential',
-    window_range_native = 10,
-    window_range_unfolded = 10
+    window_range_native = c(15,25),
+    window_range_unfolded = c(85,95)
 )
 
-pySample$fit_thermal_unfolding_global()
-#pySample$fit_thermal_unfolding_global_global()
-print(pySample$baseline_df)
-
-signal_df <- pySample$signal_to_df()
-fitted_df <- pySample$signal_to_df(signal_type = "fitted")
-baseline_df <- pySample$baseline_df
+pySample$guess_Cp()
 
 
-fig <- plot_fluo_signal(
-        signal_df              = signal_df,
-        unfolding_fitted_data              = fitted_df,
-        baseline_df            = baseline_df)
+pySample$set_thermodynamic_params_guess(
+    user_thermodynamic_params_guess = list(
+        60,
+        100,
+        1,
+        3
+    ),
+    cp_limits = NULL,
+    dh_limits = NULL,
+    tm_limits = NULL,
+    cp_value = NULL
+)
 
-fig
+
+pySample$fit_thermal_unfolding_global(
+    cp_limits = NULL,
+    dh_limits = NULL,
+    tm_limits = NULL,
+    cp_value = NULL,
+    set_init_params = FALSE)
+
+pySample$fit_thermal_unfolding_global_global()
+pySample$fit_thermal_unfolding_global_global_global()
+
+
+print(head(pySample$params_df))

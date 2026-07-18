@@ -1,6 +1,7 @@
 reactives <- reactiveValues(
     logbook = list(),# record data manipulation steps
     update_plots = NULL,  # show plots/tables
+    data_available = FALSE,  # whether data is available
     signal_df = NULL,  # signal data frame
     derivative_df = NULL,  # derivative data frame
     baseline_df = NULL,  # baseline data frame
@@ -51,7 +52,15 @@ reactives <- reactiveValues(
     n_yticks_val = 3, # number of ticks on y-axis
     tick_length_val = 8, # tick length
     tick_width_val = 2, # tick width
-    show_baseline_val = TRUE
+    show_baseline_val = TRUE,
+    use_SI_units = FALSE,
+    temp_units_str = "°C", # temperature units string
+    ignore_sg_range = FALSE,
+    tm_value_guess = 60, # initial guess for Tm
+    dh_value_guess = 100, # initial guess for DH
+    cp_value_guess = 1, # initial guess for Cp
+    m_value_guess = 3, # initial guess for m-value
+    calculate_init_params = TRUE # whether to calculate initial parameters
 )
 
 # make reactives$fitting_done available to ui.R
@@ -59,4 +68,9 @@ output$fitting_done <- reactive({
     reactives$fitting_done
 })
 
+output$data_available <- reactive({
+    reactives$data_available
+})
+
 outputOptions(output, "fitting_done" , suspendWhenHidden = FALSE)
+outputOptions(output, "data_available" , suspendWhenHidden = FALSE)
